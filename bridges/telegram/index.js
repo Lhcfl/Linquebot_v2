@@ -1,6 +1,10 @@
 import TelegramBot from 'node-telegram-bot-api';
 import proxy from 'proxy-agent';
 
+/**
+ * create Bot
+ * @returns {TelegramBot}
+ */
 export function createBot({
   bot_token,
   proxy_address,

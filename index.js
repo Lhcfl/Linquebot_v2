@@ -6,13 +6,21 @@ import yaml from 'js-yaml';
 import std from './lib/std.js';
 import fatalError from './lib/fatal_error.js';
 import db from './lib/db.js';
-import registCommand from './lib/regist_command.js';
+import { commandParser, getCommands, registCommand, registGlobalMessageHandle } from './lib/command.js';
 
 // 创建app
+
+
+/**
+ * @typedef {Object} App
+ * @property {Config} config
+ * @property {import("node-telegram-bot-api").TelegramBot} bot
+ */
 const app = {
   db,
   std,
   registCommand,
+  registGlobalMessageHandle,
 
   /** @type {Config} */
   config: {},
@@ -55,6 +63,7 @@ console.log('读取配置文件……');
  * @property {Config_Platform} platform - Platforms
  * @property {[Number]} bot_sysadmin_id - The sysadmin ids of bot
  * @property {String} bot_name - bot的昵称，用于回复中的模式识别
+ * @property {String} command_style - bot的命令起始符。主要为了适配QQ风格为"."
  */
 
 /** @type {Config} */
@@ -95,6 +104,11 @@ const { createBot } = await import(`./bridges/${app.config.platform.enabled}/ind
 
 app.bot = createBot(app.config.platform[app.config.platform.enabled]);
 
+app.bot.on('message', (msg) => {
+  console.log(msg);
+  commandParser(app, msg);
+});
+
 // 读取插件
 async function readPlugin() {
   const subfolders = fs.readdirSync('plugins', { withFileTypes: true }).filter(entry => entry.isDirectory());
@@ -111,3 +125,17 @@ async function readPlugin() {
 }
 
 await readPlugin();
+
+function setBotCommand() {
+  const botCommands = [];
+  // eslint-disable-next-line guard-for-in
+  for (const command in getCommands()) {
+    botCommands.push({
+      command,
+      description: getCommands()[command].description,
+    });
+  }
+  app.bot.setMyCommands(botCommands);
+}
+
+setBotCommand();

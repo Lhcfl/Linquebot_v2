@@ -14,3 +14,6 @@ bot_sysadmin_id:
 
 # bot的昵称，用于回复中的模式识别
 bot_name: "琳酱"
+
+# TG风格： "/" QQ风格： "." 
+command_style: "/"
