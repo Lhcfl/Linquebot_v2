@@ -1,9 +1,9 @@
 /**
  * @param {import("../..").App} app
- * @param {String} message_text
  * @param {import("node-telegram-bot-api").Message} message
+ * @param {String} message_text
  */
-function rand(app, message_text, message) {
+function rand(app, message, message_text) {
   const result = Math.floor(Math.random() * 101);
   let username = message.from?.first_name ? message.from?.first_name : message.from?.username;
   if (message.from?.last_name) {
@@ -18,10 +18,10 @@ function rand(app, message_text, message) {
 
 /**
  * @param {import("../..").App} app
- * @param {String} message_text
  * @param {import("node-telegram-bot-api").Message} message
+ * @param {String} message_text
  */
-function randwithoutname(app, message_text, message) {
+function randnoid(app, message, message_text) {
   const result = Math.floor(Math.random() * 101);
   if (message_text) {
     app.bot.sendMessage(message.chat.id, `${message_text} 的概率是: ${result}%`);
@@ -38,8 +38,8 @@ export function init(app) {
   });
   app.registCommand({
     chat_type: 'all',
-    command: 'randwithoutname',
-    handle: randwithoutname,
-    description: 'randwithoutname [事件]：投掷骰子，但不显示投掷者名字',
+    command: 'randnoid',
+    handle: randnoid,
+    description: 'randnoid [事件]：投掷骰子，但不显示投掷者名字',
   });
 }
