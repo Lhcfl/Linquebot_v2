@@ -6,7 +6,15 @@ import yaml from 'js-yaml';
 import std from './lib/std.js';
 import fatalError from './lib/fatal_error.js';
 import db from './lib/db.js';
-import { commandParser, getCommands, registCommand, registGlobalMessageHandle } from './lib/command.js';
+import {
+  commandParser,
+  getCommands,
+  getGlobalMessageHandles,
+  getReplyHandles,
+  registCommand,
+  registGlobalMessageHandle,
+  registReplyHandle
+} from './lib/command.js';
 
 // 创建app
 
@@ -21,6 +29,7 @@ const app = {
   std,
   registCommand,
   registGlobalMessageHandle,
+  registReplyHandle,
 
   /** @type {Config} */
   config: {},
@@ -107,6 +116,14 @@ app.bot = createBot(app.config.platform[app.config.platform.enabled]);
 app.bot.on('message', (msg) => {
   console.log(msg);
   commandParser(app, msg);
+  for (const cfg of getGlobalMessageHandles()) {
+    cfg.handle(app, msg);
+  }
+  if (msg.reply_to_message) {
+    for (const cfg of getReplyHandles()) {
+      cfg.handle(app, msg);
+    }
+  }
 });
 
 // 读取插件
