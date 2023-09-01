@@ -7,17 +7,17 @@ import { App } from "src/types/app.js";
 let commands: {
   [key: string]: CommandConfig;
 } = {};
-let globalMessageHandles: GlobalMessageHandleConfig[] = [];
-let replyHandles: GlobalMessageHandleConfig[] = [];
+let globalMessageHandles: MessageHandleConfig[] = [];
+let replyHandles: MessageHandleConfig[] = [];
 
 
-type handleFunction = (app: App, message: Message, message_text: String) => void;
-type globalHandleFunction = (app: App, message: Message) => void;
-interface CommandConfig {
+export type commandHandleFunction = (app: App, message: Message, message_text?: string) => void;
+export type handleFunction = (app: App, message: Message) => void;
+export interface CommandConfig {
   chat_type: "all" | ["pm", "group"];
-  handle: handleFunction;
+  handle: commandHandleFunction;
   command: string;
-  description: string;
+  description?: string;
 }
 
 export function registCommand(config: CommandConfig) {
@@ -25,16 +25,16 @@ export function registCommand(config: CommandConfig) {
   // todo
 }
 
-interface GlobalMessageHandleConfig {
+export interface MessageHandleConfig {
   chat_type: "all" | ["pm", "group"];
-  handle: globalHandleFunction;
+  handle: handleFunction;
 }
 
-export function registGlobalMessageHandle(config: GlobalMessageHandleConfig) {
+export function registGlobalMessageHandle(config: MessageHandleConfig) {
   globalMessageHandles.push(config);
 }
 
-export function registReplyHandle(config: GlobalMessageHandleConfig) {
+export function registReplyHandle(config: MessageHandleConfig) {
   replyHandles.push(config);
 }
 

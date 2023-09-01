@@ -33,6 +33,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
+    "@typescript-eslint/parser": "^6.5.0",
     "js-yaml": "^4.1.0",
     "node-telegram-bot-api": "^0.61.0",
     "proxy-agent": "^6.3.0"

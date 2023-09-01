@@ -18,6 +18,7 @@ import {
 import { App } from './types/app.js';
 import { YamlConfig } from './types/config.js';
 import { exit } from 'process';
+import { BotCommand } from 'node-telegram-bot-api';
 
 // 创建app
 
@@ -125,12 +126,12 @@ async function readPlugin() {
 await readPlugin();
 
 function setBotCommand() {
-  const botCommands = [];
+  const botCommands:BotCommand[] = [];
   // eslint-disable-next-line guard-for-in
   for (const command in getCommands()) {
     botCommands.push({
       command,
-      description: getCommands()[command].description,
+      description: getCommands()[command].description || '',
     });
   }
   app.bot!.setMyCommands(botCommands);

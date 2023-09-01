@@ -99,10 +99,11 @@ DB._defaultObject = {};
 DB.handler = {
   set(target, key, value) {
     if (typeof target[key] === 'function') {
-      return;
+      return true;
     }
     target._raw_db_obj[key] = value;
     target._updateDB();
+    return true;
   },
   get(target, key) {
     if (typeof target[key] === 'function') {
