@@ -1,5 +1,5 @@
 import { Message } from "node-telegram-bot-api";
-import { App } from "src/types/app.js";
+import { App } from "@/types/app.js";
 
 /**
  * @type {{String: CommandConfig}}
