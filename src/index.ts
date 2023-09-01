@@ -138,10 +138,12 @@ function setBotCommand() {
   const botCommands: BotCommand[] = [];
   // eslint-disable-next-line guard-for-in
   for (const command in getCommands()) {
-    botCommands.push({
-      command,
-      description: getCommands()[command].description || '',
-    });
+    if (/^[a-zA-Z_][a-zA-Z0-9_]+$/.test(command)) {
+      botCommands.push({
+        command,
+        description: getCommands()[command].description || '',
+      });
+    }
   }
   app.bot!.setMyCommands(botCommands);
 }
