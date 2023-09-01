@@ -22,6 +22,7 @@ const init: PluginInit = (app) => {
       App.bot?.sendMessage(message.chat.id, help_text);
     },
     description: '显示帮助',
+    off_mode: true,
   });
 }
 

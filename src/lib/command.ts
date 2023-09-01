@@ -10,14 +10,25 @@ let commands: {
 let globalMessageHandles: MessageHandleConfig[] = [];
 let replyHandles: replyHandleConfig[] = [];
 
+let on_off_mode: (app: App, msg: Message) => boolean = () => true;
+
 
 export type commandHandleFunction = (app: App, message: Message, message_text?: string) => void;
 export type handleFunction = (app: App, message: Message) => void;
 export interface CommandConfig {
+  /**
+   * 命令在哪类聊天中生效。
+   * @todo 尚未实现
+   */
   chat_type: "all" | ["pm", "group"];
+  /** 处理函数 */
   handle: commandHandleFunction;
+  /** 命令 */
   command: string;
+  /** 命令描述 */
   description?: string;
+  /** 描述该命令是否在bot off的情况下仍然可以使用。默认false */
+  off_mode?: boolean;
 }
 
 export function registCommand(config: CommandConfig) {
@@ -68,7 +79,9 @@ export function commandParser(app: App, message: Message) {
     } else {
       message_text = '';
     }
-    commands[cmd].handle(app, message, message_text);
+    if (on_off_mode(app, message) === true || commands[cmd].off_mode === true) {
+      commands[cmd].handle?.call(undefined, app, message, message_text);
+    }
   }
 }
 
@@ -87,5 +100,9 @@ export function getGlobalMessageHandles() {
 
 export function getReplyHandles() {
   return replyHandles;
+}
+
+export function botOnOffRegister(func: (app: App, msg: Message) => boolean) {
+  on_off_mode = func;
 }
 

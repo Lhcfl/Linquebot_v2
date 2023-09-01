@@ -179,7 +179,7 @@ const db = {
     return this._user_caches[uid];
   },
   get bot() {
-    return this.chat("linquebot_database");
+    return this.chat('linquebot_database');
   }
 };
 
