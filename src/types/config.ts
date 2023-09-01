@@ -1,7 +1,11 @@
 export interface YamlConfig {
   platform: {
     enabled: string;
-    [key: string]: Platform | string;
+    settings: {
+      // telegram?: TelegramPlatform;
+      // qq?: QQPlatform;
+      [platform: string]: UnknownPlatform;
+    };
   }
   /**
    * The sysadmin ids of bot
@@ -17,10 +21,19 @@ export interface YamlConfig {
   command_style: "/" | ".";
 }
 
-interface Platform {
+interface TelegramPlatform {
   bot_token: string;
   /**
    * 代理地址
    */
   proxy_address?: string;
+}
+
+interface QQPlatform {
+  username: string;
+  password: string;
+}
+
+interface UnknownPlatform {
+  [key: string]: string;
 }

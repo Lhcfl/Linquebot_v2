@@ -4,10 +4,10 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "dev": "cd src && ts-node index.ts",
+    "dev": "cd src && ts-node-esm index.ts",
     "start": "cd dist && node index.js",
-    "run": "npm run build && npm run start",
-    "build": "node builder.js",
+    "preview": "npm run build && npm run start",
+    "build": "tsc",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "prepare": "husky install"
@@ -30,10 +30,10 @@
     "eslint-config-discourse": "^3.6.0",
     "husky": "^8.0.3",
     "ts-node": "^10.9.1",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "@typescript-eslint/parser": "^6.5.0"
   },
   "dependencies": {
-    "@typescript-eslint/parser": "^6.5.0",
     "js-yaml": "^4.1.0",
     "node-telegram-bot-api": "^0.61.0",
     "proxy-agent": "^6.3.0"

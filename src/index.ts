@@ -19,9 +19,10 @@ import { App } from './types/app.js';
 import { YamlConfig } from './types/config.js';
 import { exit } from 'process';
 import { BotCommand } from 'node-telegram-bot-api';
+import { CreateBot } from './types/bridge.js';
+import { reverseReadFileIfExists } from './util/fs.js';
 
 // 创建app
-
 const app: App = {
   db,
   std,
@@ -32,16 +33,37 @@ const app: App = {
   config: undefined,
 
   get version() {
-    return JSON.parse(fs.readFileSync('package.json').toString()).version;
+    return JSON.parse(fs.readFileSync('package.json', { encoding: 'utf-8' })).version;
   },
   get configExample() {
-    return fs.readFileSync('config.example.yml').toString();
+    return fs.readFileSync('config.example.yml', { encoding: 'utf-8' }).toString();
   },
 
-  getConfig() {
-    return yaml.load(fs.readFileSync('config.yml').toString()) as YamlConfig;
+  async initConfig() {
+    // 读取配置文件
+    let configContent = reverseReadFileIfExists('config.yml');
+    if (!configContent) {
+      await std.questionSync(
+        '未找到配置文件。是否使用默认配置文件config.examle.yml覆盖config.yml (yes)',
+        (answer) => {
+          if (answer === 'yes') {
+            try {
+              app.setConfig(app.configExample);
+              console.log('写入完成，本程序自动退出。');
+            } catch (err) {
+              fatalError(err, '写入配置文件失败。');
+              process.exit(-1);
+            }
+          } else {
+            console.log('请正确配置config.yml. 本程序将自动退出.');
+          }
+          process.exit(0);
+        });
+      return;
+    }
+    this.config = yaml.load(configContent) as YamlConfig;
   },
-  setConfig(config_data: string) {
+  writeConfig(config_data: string) {
     fs.writeFileSync('./config.yml', config_data);
   },
 };
@@ -52,48 +74,27 @@ if (process.argv[2] === '--version') {
   process.exit(0);
 }
 
-console.log('读取配置文件……');
-
-try {
-  app.config = app.getConfig();
-} catch (err: any) {
-  if (err.errno === -4058) {
-    app.config = undefined;
-  } else {
-    fatalError(err, '读取配置文件失败。');
-    process.exit(-1);
-  }
-}
-
-if (app.config === undefined) {
-  await std.questionSync('无配置文件。是否使用默认配置文件config.examle.yml覆盖config.yml (yes)', (answer: any) => {
-    if (answer === 'yes') {
-      try {
-        app.setConfig(app.configExample);
-        console.log('写入完成，本程序自动退出。');
-      } catch (err) {
-        // console.log('写入失败……');
-        fatalError(err, '写入配置文件失败。');
-        process.exit(-1);
-      }
-    } else {
-      console.log('请正确配置config.yml. 本程序将自动退出.');
-    }
-    process.exit(0);
-  });
-}
+// 初始化配置
+await app.initConfig();
 
 console.log(app.config);
 
 if (!app.config) exit(-1);
 
 // 创建bot
+if (app.config.platform.settings[app.config.platform.enabled] === undefined) {
+  console.log(`未找到${app.config.platform.enabled}的配置，请检查config.yml`);
+  exit(-1);
+}
 console.log(`启动来自${app.config.platform.enabled}的bot……`);
-const { createBot } = await import(`./bridges/${app.config.platform.enabled}/index.js`);
+const createBot = (await import(`./bridges/${app.config.platform.enabled}/index.js`)).createBot as CreateBot;
 
-app.bot = createBot(app.config.platform[app.config.platform.enabled]);
+app.bot = createBot(app.config.platform.settings[app.config.platform.enabled]);
 
-if (!app.bot) exit(-1);
+if (!app.bot) {
+  console.log('bot创建失败，请检查bridge是否正确。');
+  exit(-1);
+}
 
 app.bot.on('message', (msg) => {
   console.log(msg);
@@ -126,7 +127,7 @@ async function readPlugin() {
 await readPlugin();
 
 function setBotCommand() {
-  const botCommands:BotCommand[] = [];
+  const botCommands: BotCommand[] = [];
   // eslint-disable-next-line guard-for-in
   for (const command in getCommands()) {
     botCommands.push({
