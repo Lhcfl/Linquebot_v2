@@ -1,9 +1,9 @@
 /**
  * Handle and output fatal error messages
- * @param {error} error The error
- * @param {string | undefined} message The message to output
+ * @param  error The error
+ * @param  message The message to output
  */
-export default function logFatalError(error, message) {
+export default function logFatalError(error: unknown, message: String | undefined) {
   if (message) {
     console.log('---------------');
     console.log(`致命错误：${message}`);

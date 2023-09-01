@@ -6,7 +6,10 @@ import fs from 'fs';
 import path from 'path';
 // import yaml from 'js-yaml';
 
-
+/**
+ * 判断文件名的路径是否不存在，如果不存在，则创建路径。
+ * @param {String} filePath 文件路径
+ */
 function createDirectoryPath(filePath) {
   const dirname = path.dirname(filePath);
   if (!fs.existsSync(dirname)) {
@@ -28,6 +31,11 @@ function safeWriteFile(filePath, data) {
     }
   });
 }
+/**
+ * 读取文件，如果文件不存在，则创建它，并返回 '{}'
+ * @param {String} filePath 文件路径
+ * @returns {Buffer | String} 等同于fs.readFileSync
+ */
 function safeReadFile(filePath) {
   try {
     return fs.readFileSync(filePath);
@@ -37,6 +45,11 @@ function safeReadFile(filePath) {
   }
 }
 
+/**
+ * 将文件命去除禁止的字符而安全保存
+ * @param {String | Number} fileName 待处理文件名
+ * @returns {String} 安全文件名
+ */
 function safeFileName(fileName) {
   fileName = `${fileName}`;
   fileName = encodeURI(fileName);
@@ -52,6 +65,9 @@ function safeFileName(fileName) {
   return fileName;
 }
 
+/**
+ * 数据库类
+ */
 class DB {
   /**
    * constructor

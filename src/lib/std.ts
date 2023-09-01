@@ -1,7 +1,13 @@
 import readline from 'readline';
 
-const std = {
-  questionSync: async function(message, fn) {
+type AnswerFunc = (answer: string) => void;
+
+interface Std {
+  questionSync: (message: string, fn: AnswerFunc) => Promise<void>;
+}
+
+const std: Std = {
+  questionSync: async function(message, fn): Promise<void> {
     const rd = readline.createInterface({
       input: process.stdin,
       output: process.stdout

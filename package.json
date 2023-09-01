@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "cd src && ts-node index.ts",
     "start": "cd dist && node index.js",
-    "build": "tsc",
+    "run": "npm run build && npm run start",
+    "build": "node builder.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "prepare": "husky install"
