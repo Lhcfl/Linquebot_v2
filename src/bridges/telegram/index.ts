@@ -1,6 +1,7 @@
 import TelegramBot from 'node-telegram-bot-api';
 import proxy from 'proxy-agent';
-import { CreateBot } from 'src/types/bridge.js';
+import { CreateBot } from '@/types/bridge.js';
+import { parseProxyUrl } from '@/util/string.js';
 
 /**
  * create Bot
@@ -11,15 +12,16 @@ export const createBot: CreateBot = ({
 }) => {
   let bot;
   if (proxy_address) {
+    const { protocol, host, port } = parseProxyUrl(proxy_address);
     bot = new TelegramBot(bot_token, {
       polling: true,
-      // TODO: 代理需要考虑protocol问题
       request: {
         agent: new proxy.ProxyAgent({
-          protocol: 'http:',
-          host: proxy_address,
+          protocol,
+          host,
+          port,
         }),
-        url: `http://${proxy_address}`,
+        url: proxy_address,
       }
     });
   } else {

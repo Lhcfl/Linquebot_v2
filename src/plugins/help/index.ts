@@ -1,4 +1,4 @@
-import { PluginInit } from 'src/types/plugin.js';
+import { PluginInit } from '@/types/plugin.js';
 import { getCommands, getGlobalMessageHandles } from '../../lib/command.js';
 
 const init: PluginInit = (app) => {
