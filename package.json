@@ -7,7 +7,7 @@
     "dev": "cd src && ts-node-esm index.ts",
     "start": "cd dist && node index.js",
     "preview": "npm run build && npm run start",
-    "build": "tsc & tsc-alias",
+    "build": "tsc && tsc-alias",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "prepare": "husky install"
