@@ -110,8 +110,8 @@ app.bot.on('message', (msg) => {
 });
 
 // 读取插件
-async function readPlugin() {
-  const subfolders = fs.readdirSync('plugins', { withFileTypes: true }).filter(entry => entry.isDirectory());
+async function readPlugin(pluginDir: string) {
+  const subfolders = fs.readdirSync(pluginDir, { withFileTypes: true }).filter(entry => entry.isDirectory());
   let errs: string[] = [];
   let success: number = 0;
   for (const subfolder of subfolders) {
@@ -131,7 +131,7 @@ async function readPlugin() {
   }
 }
 
-await readPlugin();
+await readPlugin('plugins');
 
 function setBotCommand() {
   const botCommands:BotCommand[] = [];

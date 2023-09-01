@@ -45,5 +45,5 @@ graph LR;
 
 每个plugin单独为一个文件夹，响应插件定义的命令对应的动作。
 
-每个plugin有一个index.js作为入口，export default一个init()
+每个plugin有一个index.js作为入口，export一个init()
 

@@ -177,6 +177,9 @@ const db = {
       this._user_caches[uid] = new Proxy(new UserDB(uid), UserDB.handler);
     }
     return this._user_caches[uid];
+  },
+  get bot() {
+    return this.chat("linquebot_database");
   }
 };
 
