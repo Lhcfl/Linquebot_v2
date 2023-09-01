@@ -3,10 +3,15 @@
 
 platform:
   enabled: "telegram"
-  telegram:
-    bot_token: "xxxxxxxxxx:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-    # 设置代理。无需代理则注释下面这一行。
-    proxy_address: "http://proxy.com" 
+  settings:
+    telegram:
+      bot_token: "xxxxxxxxxx:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      # 设置代理。无需代理则注释下面这一行。
+      proxy_address: "http://proxy.com"
+    qq:
+      username: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      # 设置代理。无需代理则注释下面这一行。
+      password: "http://proxy.com"
 
 # The sysadmin ids of bot
 bot_sysadmin_id:
