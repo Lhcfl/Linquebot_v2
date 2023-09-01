@@ -8,7 +8,7 @@ let commands: {
   [key: string]: CommandConfig;
 } = {};
 let globalMessageHandles: MessageHandleConfig[] = [];
-let replyHandles: MessageHandleConfig[] = [];
+let replyHandles: replyHandleConfig[] = [];
 
 
 export type commandHandleFunction = (app: App, message: Message, message_text?: string) => void;
@@ -28,13 +28,22 @@ export function registCommand(config: CommandConfig) {
 export interface MessageHandleConfig {
   chat_type: "all" | ["pm", "group"];
   handle: handleFunction;
+  /**
+   * 必填，描述插件为什么要使用全局消息处理
+   */
+  description: string;
+}
+export interface replyHandleConfig {
+  chat_type: "all" | ["pm", "group"];
+  handle: handleFunction;
+  description?: string;
 }
 
 export function registGlobalMessageHandle(config: MessageHandleConfig) {
   globalMessageHandles.push(config);
 }
 
-export function registReplyHandle(config: MessageHandleConfig) {
+export function registReplyHandle(config: replyHandleConfig) {
   replyHandles.push(config);
 }
 

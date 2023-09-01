@@ -44,10 +44,12 @@ const init: PluginInit = (app) => {
         if (i == -1) {
           App.bot?.sendMessage(msg.chat.id, `<a href="tg://user?id=${msg.from?.id}">${a}</a> ${msgTxt} <a href="tg://user?id=${bid}">${b}</a>!`, {
             parse_mode: "HTML",
+            reply_to_message_id: msg.message_id,
           });
         } else {
           App.bot?.sendMessage(msg.chat.id, `<a href="tg://user?id=${msg.from?.id}">${a}</a> ${msgTxt.substring(0, i)} <a href="tg://user?id=${bid}">${b}</a> ${msgTxt.substring(i + 1)}!`, {
             parse_mode: "HTML",
+            reply_to_message_id: msg.message_id,
           });
         }
       }

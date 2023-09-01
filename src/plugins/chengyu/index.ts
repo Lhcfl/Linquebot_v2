@@ -217,6 +217,7 @@ const init: PluginInit = (app) => {
   app.registGlobalMessageHandle({
     chat_type: 'all',
     handle: newMessageHandle,
+    description: '成语接龙: 用于便利的获得所说成语。'
   })
 }
 
