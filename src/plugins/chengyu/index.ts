@@ -135,6 +135,7 @@ const startJielong: commandHandleFunction = (app, msg, starter) => {
 
 const stopJielong: commandHandleFunction = (app, msg) => {
   if (db.chat(msg.chat.id).jielong_status?.started) {
+    app.bot?.sendMessage(msg.chat.id, `接龙被 @${msg.from?.username} 结束!\n最终情况：${getJielongStatus(msg)}`);
     try {
       db.chat(msg.chat.id).jielong_status = {
         started: false,
@@ -142,8 +143,6 @@ const stopJielong: commandHandleFunction = (app, msg) => {
     } catch (err) {
       console.error(err);
     }
-
-    app.bot?.sendMessage(msg.chat.id, `接龙被 @${msg.from?.username} 结束!\n最终情况：${getJielongStatus(msg)}`);
   } else {
     app.bot?.sendMessage(msg.chat.id, `接龙还未开始哦`);
   }
@@ -174,7 +173,7 @@ const newMessageHandle:handleFunction = (app, msg) => {
         db.chat(msg.chat.id).jielong_status.userStatus[msg.from?.id] = {
           uid: msg.from?.id,
           username: msg.from?.username,
-          score: 1,
+          score: 0,
           combo: 1,
         }
       }

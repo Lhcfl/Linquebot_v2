@@ -84,11 +84,12 @@ if (app.config === undefined) {
 }
 
 console.log(app.config);
+console.log('---------------');
 
 if (!app.config) exit(-1);
 
 // 创建bot
-console.log(`启动来自${app.config.platform.enabled}的bot……`);
+console.log(`Laauching bot at Platform[${app.config.platform.enabled}]...`);
 const { createBot } = await import(`./bridges/${app.config.platform.enabled}/index.js`);
 
 app.bot = createBot(app.config.platform[app.config.platform.enabled]);
@@ -111,15 +112,22 @@ app.bot.on('message', (msg) => {
 // 读取插件
 async function readPlugin() {
   const subfolders = fs.readdirSync('plugins', { withFileTypes: true }).filter(entry => entry.isDirectory());
-
+  let errs: string[] = [];
+  let success: number = 0;
   for (const subfolder of subfolders) {
     try {
-      console.log(`加载插件 ${subfolder.name}...`);
+      console.log(`> 加载插件 ${subfolder.name}...`);
       const plugin = await import(`./plugins/${subfolder.name}/index.js`);
       plugin.init(app);
+      success ++;
     } catch (err) {
+      errs.push(subfolder.name);
       console.error(err);
     }
+  }
+  console.log(`插件加载完成。成功加载 ${success} 个，失败 ${errs.length} 个`);
+  for (const errName of errs) {
+    console.log(`  - ${errName}`);
   }
 }
 

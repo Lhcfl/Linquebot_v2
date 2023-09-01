@@ -4,7 +4,7 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "dev": "cd src && ts-node index.ts",
+    "dev": "cd src && ts-node-esm index.ts",
     "start": "cd dist && node index.js",
     "run": "npm run build && npm run start",
     "build": "node builder.js",

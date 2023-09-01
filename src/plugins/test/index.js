@@ -1,10 +1,13 @@
-export function init(app) {
+export function init() {
   console.log('test loaded!');
-  console.log(app);
-  // app.registReplyHandle({
-  //   chat_type: 'all',
-  //   handle: (App, msg) => {
-  //     App.bot.sendMessage(msg.chat.id, '喵？你回复我了吗？');
-  //   },
-  // });
 }
+
+/** Template */
+
+// import { PluginInit } from 'src/types/plugin.js';
+
+// const init: PluginInit = (app) => {
+//   console.log('xxx loaded!');
+// }
+
+// export { init };

@@ -13,21 +13,25 @@ const commands = [
 import { execSync } from 'child_process';
 import chalk from 'chalk';
 
-function logCommand(message, func, ed = ' ...' + chalk.green('[OK]')) {
-  process.stdout.write(message);
+function logCommand(message, func) {
+  console.log(message);
   try {
     func();
-    console.log(ed);
   } catch (error) {
     console.log(chalk.red('[ERROR]'));
     console.log('--------------------------');
-    throw error;
+    if (error.stdout) {
+      console.log(error.stdout.toString());
+      throw error.message;
+    } else {
+      throw error;
+    }
   }
 }
 
 commands.forEach((c) => {
-  logCommand(c, () => {
-    execSync(c);
+  logCommand('> ' + c, () => {
+    execSync(c, {stdio: 'inherit'});
   });
 });
 
