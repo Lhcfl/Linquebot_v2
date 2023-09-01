@@ -1,3 +1,10 @@
 node_modules/
 data/
 config.yml
+
+# lock文件
+package-lock.json
+pnpm-lock.yaml
+
+# 构建产物
+dist

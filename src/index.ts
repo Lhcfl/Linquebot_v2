@@ -15,36 +15,32 @@ import {
   registGlobalMessageHandle,
   registReplyHandle
 } from './lib/command.js';
+import { App } from './types/app.js';
+import { YamlConfig } from './types/config.js';
+import { exit } from 'process';
 
 // 创建app
 
-
-/**
- * @typedef {Object} App
- * @property {Config} config
- * @property {import("node-telegram-bot-api").TelegramBot} bot
- */
-const app = {
+const app: App = {
   db,
   std,
   registCommand,
   registGlobalMessageHandle,
   registReplyHandle,
 
-  /** @type {Config} */
-  config: {},
+  config: undefined,
 
   get version() {
-    return JSON.parse(fs.readFileSync('package.json')).version;
+    return JSON.parse(fs.readFileSync('package.json').toString()).version;
   },
   get configExample() {
-    return fs.readFileSync('config.example.yml');
+    return fs.readFileSync('config.example.yml').toString();
   },
 
   getConfig() {
-    return yaml.load(fs.readFileSync('config.yml'));
+    return yaml.load(fs.readFileSync('config.yml').toString()) as YamlConfig;
   },
-  setConfig(config_data) {
+  setConfig(config_data: string) {
     fs.writeFileSync('./config.yml', config_data);
   },
 };
@@ -57,45 +53,26 @@ if (process.argv[2] === '--version') {
 
 console.log('读取配置文件……');
 
-/**
- * @typedef {Object} Config_Platform
- * @property {String} enabled Enabled的平台名称
- * @property {Config_Telegram} telegram
- */
-/**
- * @typedef {Object} Config_Telegram
- * @property {String} bot_token - "xxxxxxxxxx:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
- * @property {String} proxy_address - Telegram使用的代理地址
- */
-/**
- * @typedef {Object} Config
- * @property {Config_Platform} platform - Platforms
- * @property {[Number]} bot_sysadmin_id - The sysadmin ids of bot
- * @property {String} bot_name - bot的昵称，用于回复中的模式识别
- * @property {String} command_style - bot的命令起始符。主要为了适配QQ风格为"."
- */
-
-/** @type {Config} */
 try {
   app.config = app.getConfig();
-} catch (err) {
+} catch (err: any) {
   if (err.errno === -4058) {
     app.config = undefined;
   } else {
-    fatalError(err);
+    fatalError(err, '读取配置文件失败。');
     process.exit(-1);
   }
 }
 
 if (app.config === undefined) {
-  await std.questionSync('无配置文件。是否使用默认配置文件config.examle.yml覆盖config.yml (yes)', (answer) => {
+  await std.questionSync('无配置文件。是否使用默认配置文件config.examle.yml覆盖config.yml (yes)', (answer: any) => {
     if (answer === 'yes') {
       try {
-        db.setConfig(db.configExample);
+        app.setConfig(app.configExample);
         console.log('写入完成，本程序自动退出。');
       } catch (err) {
-        console.log('写入失败……');
-        fatalError(err);
+        // console.log('写入失败……');
+        fatalError(err, '写入配置文件失败。');
         process.exit(-1);
       }
     } else {
@@ -107,11 +84,15 @@ if (app.config === undefined) {
 
 console.log(app.config);
 
+if (!app.config) exit(-1);
+
 // 创建bot
 console.log(`启动来自${app.config.platform.enabled}的bot……`);
 const { createBot } = await import(`./bridges/${app.config.platform.enabled}/index.js`);
 
 app.bot = createBot(app.config.platform[app.config.platform.enabled]);
+
+if (!app.bot) exit(-1);
 
 app.bot.on('message', (msg) => {
   console.log(msg);
@@ -152,7 +133,7 @@ function setBotCommand() {
       description: getCommands()[command].description,
     });
   }
-  app.bot.setMyCommands(botCommands);
+  app.bot!.setMyCommands(botCommands);
 }
 
 setBotCommand();
