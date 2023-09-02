@@ -8,3 +8,4 @@ pnpm-lock.yaml
 
 # 构建产物
 dist
+docs/
