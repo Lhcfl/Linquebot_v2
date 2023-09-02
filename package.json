@@ -8,8 +8,8 @@
     "start": "cd dist && node index.js",
     "preview": "npm run build && npm run start",
     "build": "tsc && tsc-alias",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "lint": "eslint . --ext .ts,.js",
+    "lint:fix": "eslint . --fix --ext .ts,.js",
     "prepare": "husky install"
   },
   "repository": {
@@ -26,6 +26,7 @@
     "@types/js-yaml": "^4.0.5",
     "@types/node": "^20.5.7",
     "@types/node-telegram-bot-api": "^0.61.7",
+    "@typescript-eslint/eslint-plugin": "^6.5.0",
     "@typescript-eslint/parser": "^6.5.0",
     "eslint": "^8.48.0",
     "eslint-config-discourse": "^3.6.0",

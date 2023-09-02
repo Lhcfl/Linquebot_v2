@@ -16,12 +16,12 @@ export interface YamlConfig {
    */
   bot_name: string;
   /**
-   * TG风格： "/" QQ风格： "." 
+   * TG风格： "/" QQ风格： "."
    */
-  command_style: "/" | ".";
+  command_style: '/' | '.';
 }
 
-interface TelegramPlatform {
+export interface TelegramPlatform {
   bot_token: string;
   /**
    * 代理地址
@@ -29,11 +29,11 @@ interface TelegramPlatform {
   proxy_address?: string;
 }
 
-interface QQPlatform {
+export interface QQPlatform {
   username: string;
   password: string;
 }
 
-interface UnknownPlatform {
+export interface UnknownPlatform {
   [key: string]: string;
 }

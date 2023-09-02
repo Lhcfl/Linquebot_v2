@@ -184,7 +184,7 @@ const stopJielong: commandHandleFunction = (app, msg) => {
 const newMessageHandle:handleFunction = (app, msg) => {
   if (getJielongStatus(msg)?.started && msg.text && cy[msg.text]) {
     if (gameEnded(msg)) {
-      let res:string = `成语接龙结束啦！${app.config?.bot_name}来宣布结果：${getJielongInfo(msg)}`;
+      const res:string = `成语接龙结束啦！${app.config?.bot_name}来宣布结果：${getJielongInfo(msg)}`;
       app.bot?.sendMessage(msg.chat.id, res);
       db.chat(msg.chat.id).jielong_status = {};
       return;

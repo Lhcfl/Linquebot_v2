@@ -1,4 +1,4 @@
 export function createBot() {
-  let bot = {};
+  const bot = {};
   return bot;
 }

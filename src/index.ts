@@ -42,7 +42,7 @@ const app: App = {
 
   async initConfig() {
     // 读取配置文件
-    let configContent = reverseReadFileIfExists('config.yml');
+    const configContent = reverseReadFileIfExists('config.yml');
     if (!configContent) {
       await std.questionSync(
         '未找到配置文件。是否使用默认配置文件config.examle.yml覆盖config.yml (yes)',
@@ -116,7 +116,7 @@ app.bot.on('message', (msg) => {
 // 读取插件
 async function readPlugin(pluginDir: string) {
   const subfolders = fs.readdirSync(pluginDir, { withFileTypes: true }).filter(entry => entry.isDirectory());
-  let errs: string[] = [];
+  const errs: string[] = [];
   let success: number = 0;
   for (const subfolder of subfolders) {
     try {

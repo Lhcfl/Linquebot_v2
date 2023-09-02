@@ -5,11 +5,11 @@ import { App } from '@/types/app.js';
 /**
  * @type {{String: CommandConfig}}
  */
-let commands: {
+const commands: {
   [key: string]: CommandConfig;
 } = {};
-let globalMessageHandles: MessageHandleConfig[] = [];
-let replyHandles: replyHandleConfig[] = [];
+const globalMessageHandles: MessageHandleConfig[] = [];
+const replyHandles: replyHandleConfig[] = [];
 
 let on_off_mode: (app: App, msg: Message) => boolean = () => true;
 

@@ -24,6 +24,6 @@ const init: PluginInit = (app) => {
     description: '显示帮助',
     off_mode: true,
   });
-}
+};
 
 export { init };

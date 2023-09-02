@@ -30,4 +30,4 @@ export const createBot: CreateBot = ({
     });
   }
   return bot;
-}
+};

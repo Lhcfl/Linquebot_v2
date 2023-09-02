@@ -3,7 +3,7 @@
  * @param  error The error
  * @param  message The message to output
  */
-export default function logFatalError(error: unknown, message: String | undefined) {
+export default function logFatalError(error: unknown, message: string | undefined) {
   if (message) {
     console.log('---------------');
     console.log(`致命错误：${message}`);
