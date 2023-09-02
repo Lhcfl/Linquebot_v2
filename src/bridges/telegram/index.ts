@@ -4,7 +4,8 @@ import { CreateBot } from '@/types/bridge.js';
 import { parseProxyUrl } from '@/util/string.js';
 
 /**
- * create Bot
+ * 创建TelegramBot
+ * @returns new TelegramBot
  */
 export const createBot: CreateBot = ({
   bot_token,

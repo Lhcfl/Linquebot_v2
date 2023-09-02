@@ -19,7 +19,7 @@ import {
 import { App } from './types/app.js';
 import { YamlConfig } from './types/config.js';
 import { exit } from 'process';
-import { BotCommand } from 'node-telegram-bot-api';
+import TelegramBot, { BotCommand } from 'node-telegram-bot-api';
 import { CreateBot } from './types/bridge.js';
 import { reverseReadFileIfExists } from './util/fs.js';
 
@@ -31,7 +31,23 @@ const app: App = {
   registGlobalMessageHandle,
   registReplyHandle,
 
-  config: undefined,
+  _config: undefined,
+
+  get config(): YamlConfig {
+    if (this._config) {
+      return this._config;
+    } else {
+      throw '未找到config';
+    }
+  },
+  get bot(): TelegramBot {
+    if (this._bot) {
+      return this._bot;
+    } else {
+      throw '无bot被初始化';
+    }
+  },
+
 
   get version() {
     return JSON.parse(fs.readFileSync('package.json', { encoding: 'utf-8' })).version;
@@ -62,7 +78,7 @@ const app: App = {
         });
       return;
     }
-    this.config = yaml.load(configContent) as YamlConfig;
+    this._config = yaml.load(configContent) as YamlConfig;
   },
   writeConfig(config_data: string) {
     fs.writeFileSync('./config.yml', config_data);
@@ -91,9 +107,9 @@ if (app.config.platform.settings[app.config.platform.enabled] === undefined) {
 console.log(`Laauching bot at Platform[${app.config.platform.enabled}]...`);
 const createBot = (await import(`./bridges/${app.config.platform.enabled}/index.js`)).createBot as CreateBot;
 
-app.bot = createBot(app.config.platform.settings[app.config.platform.enabled]);
+app._bot = createBot(app.config.platform.settings[app.config.platform.enabled]);
 
-if (!app.bot) {
+if (!app._bot) {
   console.log('bot创建失败，请检查bridge是否正确。');
   exit(-1);
 }
@@ -141,7 +157,7 @@ function setBotCommand() {
   const botCommands: BotCommand[] = [];
   // eslint-disable-next-line guard-for-in
   for (const command in getCommands()) {
-    if (/^[a-zA-Z_][a-zA-Z0-9_]+$/.test(command)) {
+    if (/^[a-z_][a-z0-9_]+$/.test(command)) {
       botCommands.push({
         command,
         description: getCommands()[command].description || '',
