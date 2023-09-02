@@ -7,6 +7,7 @@ import std from './lib/std.js';
 import fatalError from './lib/fatal_error.js';
 import db from './lib/db.js';
 import {
+  botOnOff,
   commandParser,
   getCommands,
   getGlobalMessageHandles,
@@ -80,7 +81,7 @@ await app.initConfig();
 console.log(app.config);
 console.log('---------------');
 
-if (!app.config) exit(-1);
+if (!app.config) { exit(-1); }
 
 // 创建bot
 if (app.config.platform.settings[app.config.platform.enabled] === undefined) {
@@ -100,12 +101,14 @@ if (!app.bot) {
 app.bot.on('message', (msg) => {
   console.log(msg);
   commandParser(app, msg);
-  for (const cfg of getGlobalMessageHandles()) {
-    cfg.handle(app, msg);
-  }
-  if (msg.reply_to_message) {
-    for (const cfg of getReplyHandles()) {
+  if (botOnOff(app, msg)) {
+    for (const cfg of getGlobalMessageHandles()) {
       cfg.handle(app, msg);
+    }
+    if (msg.reply_to_message) {
+      for (const cfg of getReplyHandles()) {
+        cfg.handle(app, msg);
+      }
     }
   }
 });

@@ -1,5 +1,6 @@
-import { Message } from "node-telegram-bot-api";
-import { App } from "@/types/app.js";
+/* eslint-disable no-unused-vars */
+import { Message } from 'node-telegram-bot-api';
+import { App } from '@/types/app.js';
 
 /**
  * @type {{String: CommandConfig}}
@@ -20,7 +21,7 @@ export interface CommandConfig {
    * 命令在哪类聊天中生效。
    * @todo 尚未实现
    */
-  chat_type: "all" | ["pm", "group"];
+  chat_type: 'all' | ['pm', 'group'];
   /** 处理函数 */
   handle: commandHandleFunction;
   /** 命令 */
@@ -37,7 +38,7 @@ export function registCommand(config: CommandConfig) {
 }
 
 export interface MessageHandleConfig {
-  chat_type: "all" | ["pm", "group"];
+  chat_type: 'all' | ['pm', 'group'];
   handle: handleFunction;
   /**
    * 必填，描述插件为什么要使用全局消息处理
@@ -45,7 +46,7 @@ export interface MessageHandleConfig {
   description: string;
 }
 export interface replyHandleConfig {
-  chat_type: "all" | ["pm", "group"];
+  chat_type: 'all' | ['pm', 'group'];
   handle: handleFunction;
   description?: string;
 }
@@ -62,7 +63,7 @@ export function registReplyHandle(config: replyHandleConfig) {
  * Parse command
  */
 export function commandParser(app: App, message: Message) {
-  if (app.config === undefined) { 
+  if (app.config === undefined) {
     console.warn('app.config is undefined');
     return;
   }
@@ -90,7 +91,7 @@ export function commandParser(app: App, message: Message) {
  */
 export function getCommands(): {
   [key: string]: CommandConfig;
-} {
+  } {
   return commands;
 }
 
@@ -102,7 +103,11 @@ export function getReplyHandles() {
   return replyHandles;
 }
 
-export function botOnOffRegister(func: (app: App, msg: Message) => boolean) {
+export function botOnOffRegister(func: (app: App, message: Message) => boolean) {
   on_off_mode = func;
+}
+
+export function botOnOff(app: App, msg: Message):boolean {
+  return on_off_mode(app, msg);
 }
 
