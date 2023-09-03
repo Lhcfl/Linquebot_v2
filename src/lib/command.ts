@@ -21,7 +21,7 @@ export interface CommandConfig {
    * 描述命令在哪类聊天中生效。
    * 未指定则默认等同于 'all'
    */
-  chat_type?: 'all' | [TelegramBot.ChatType];
+  chat_type?: 'all' | TelegramBot.ChatType[];
   /**
    * 描述该命令的适用权限范围
    * 默认 'all'
@@ -66,7 +66,7 @@ export interface MessageHandleConfig {
    * 描述命令在哪类聊天中生效。
    * 未指定则默认等同于 'all'
    */
-  chat_type?: 'all' | [TelegramBot.ChatType];
+  chat_type?: 'all' | TelegramBot.ChatType[];
   /**
    * 消息处理函数
    */
@@ -84,7 +84,7 @@ export interface replyHandleConfig {
    * 描述命令在哪类聊天中生效。
    * 未指定则默认等同于 'all'
    */
-  chat_type?: 'all' | [TelegramBot.ChatType];
+  chat_type?: 'all' | TelegramBot.ChatType[];
   /**
    * 消息处理函数
    */
@@ -176,7 +176,9 @@ export function commandParser(app: App, message: Message) {
       if (canUse.success) {
         commands[cmd].handle?.call(undefined, app, message, message_text);
       } else {
-        app.bot.sendMessage(message.chat.id, canUse.error_message);
+        if (canUse.error_message === 'permission denied') {
+          app.bot.sendMessage(message.chat.id, '您的权限不足');
+        }
       }
     }
   }
