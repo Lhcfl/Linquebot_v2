@@ -22,3 +22,6 @@ bot_name: "琳酱"
 
 # TG风格： "/" QQ风格： "." 
 command_style: "/"
+
+# 轮询超时消息不处理时间（秒）
+outdate_seconds: 300

@@ -1,120 +1,24 @@
 // 读取配置和模块
 import fs from 'fs';
-// import Promise from 'promise';
-import yaml from 'js-yaml';
-// import readline from 'readline'
-import std from './lib/std.js';
-import fatalError from './lib/fatal_error.js';
-import db from './lib/db.js';
 import {
   botOnOff,
   commandParser,
   getCommands,
   getGlobalMessageHandles,
   getReplyHandles,
-  registCommand,
-  registGlobalMessageHandle,
-  registReplyHandle
-} from './lib/command.js';
-import { App } from './types/app.js';
-import { YamlConfig } from './types/config.js';
-import { exit } from 'process';
-import TelegramBot, { BotCommand } from 'node-telegram-bot-api';
-import { CreateBot } from './types/bridge.js';
-import { reverseReadFileIfExists } from './util/fs.js';
+} from '@/lib/command.js';
+import { BotCommand } from 'node-telegram-bot-api';
+import { Application } from '@/lib/app.js';
 
-// 创建app
-const app: App = {
-  db,
-  std,
-  registCommand,
-  registGlobalMessageHandle,
-  registReplyHandle,
-
-  _config: undefined,
-
-  get config(): YamlConfig {
-    if (this._config) {
-      return this._config;
-    } else {
-      throw '未找到config';
-    }
-  },
-  get bot(): TelegramBot {
-    if (this._bot) {
-      return this._bot;
-    } else {
-      throw '无bot被初始化';
-    }
-  },
-
-
-  get version() {
-    return JSON.parse(fs.readFileSync('package.json', { encoding: 'utf-8' })).version;
-  },
-  get configExample() {
-    return fs.readFileSync('config.example.yml', { encoding: 'utf-8' }).toString();
-  },
-
-  async initConfig() {
-    // 读取配置文件
-    const configContent = reverseReadFileIfExists('config.yml');
-    if (!configContent) {
-      await std.questionSync(
-        '未找到配置文件。是否使用默认配置文件config.examle.yml覆盖config.yml (yes)',
-        (answer) => {
-          if (answer === 'yes') {
-            try {
-              app.setConfig(app.configExample);
-              console.log('写入完成，本程序自动退出。');
-            } catch (err) {
-              fatalError(err, '写入配置文件失败。');
-              process.exit(-1);
-            }
-          } else {
-            console.log('请正确配置config.yml. 本程序将自动退出.');
-          }
-          process.exit(0);
-        });
-      return;
-    }
-    this._config = yaml.load(configContent) as YamlConfig;
-  },
-  writeConfig(config_data: string) {
-    fs.writeFileSync('./config.yml', config_data);
-  },
-};
-
-if (process.argv[2] === '--version') {
-  console.log(`Linquebot ${app.version}`);
-  console.log('本程序具有超级琳力');
-  process.exit(0);
-}
-
-// 初始化配置
-await app.initConfig();
-
-console.log(app.config);
-console.log('---------------');
-
-if (!app.config) { exit(-1); }
-
-// 创建bot
-if (app.config.platform.settings[app.config.platform.enabled] === undefined) {
-  console.log(`未找到${app.config.platform.enabled}的配置，请检查config.yml`);
-  exit(-1);
-}
-console.log(`Laauching bot at Platform[${app.config.platform.enabled}]...`);
-const createBot = (await import(`./bridges/${app.config.platform.enabled}/index.js`)).createBot as CreateBot;
-
-app._bot = createBot(app.config.platform.settings[app.config.platform.enabled]);
-
-if (!app._bot) {
-  console.log('bot创建失败，请检查bridge是否正确。');
-  exit(-1);
-}
+/** 创建app */
+const app = new Application();
+/** 初始化app */
+await app.init();
 
 app.bot.on('message', (msg) => {
+  if (Number(new Date)/1000 - msg.date > app.config.outdate_seconds) {
+    console.log('古老消息被忽略。详见 config.outdate_seconds');
+  }
   console.log(msg);
   commandParser(app, msg);
   if (botOnOff(app, msg)) {
