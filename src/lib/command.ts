@@ -15,12 +15,20 @@ let on_off_mode: (app: App, msg: Message) => boolean = () => true;
 
 export type commandHandleFunction = (app: App, message: Message, message_text?: string) => void;
 export type handleFunction = (app: App, message: Message) => void;
+
 export interface CommandConfig {
   /**
    * 描述命令在哪类聊天中生效。
+   * 默认 'all'
    * @todo 本功能尚未实现
    */
-  chat_type: 'all' | ['pm', 'group'];
+  chat_type?: 'all' | ['pm' | 'group'];
+  /**
+   * 描述该命令的适用权限范围
+   * 默认 'all'
+   * @todo 本功能尚未实现
+   */
+  premission?: 'all' | 'groupAdmin' | 'superAdmin'
   /**
    * 消息处理函数
    */
@@ -108,10 +116,6 @@ export function registReplyHandle(config: replyHandleConfig) {
  * Parse command and execute
  */
 export function commandParser(app: App, message: Message) {
-  if (app.config === undefined) {
-    console.warn('app.config is undefined');
-    return;
-  }
   if (message.text?.startsWith(app.config.command_style)) {
     const matched = message.text.substring(app.config.command_style.length).match(/[^\s@]+/);
     if (!matched) {
@@ -125,7 +129,7 @@ export function commandParser(app: App, message: Message) {
     } else {
       message_text = '';
     }
-    if (on_off_mode(app, message) === true || commands[cmd].off_mode === true) {
+    if (botOnOff(app, message) === true || commands[cmd].off_mode === true) {
       commands[cmd].handle?.call(undefined, app, message, message_text);
     }
   }
