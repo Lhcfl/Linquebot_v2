@@ -4,6 +4,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import { writeFileSafe } from './file_lock.js';
 // import yaml from 'js-yaml';
 
 /**
@@ -24,12 +25,7 @@ function createDirectoryPath(filePath) {
  */
 function safeWriteFile(filePath, data) {
   createDirectoryPath(filePath);
-  fs.writeFile(filePath, data, (err) => {
-    if (err) {
-      console.error(err);
-      throw err;
-    }
-  });
+  writeFileSafe(filePath, data);
 }
 /**
  * 读取文件，如果文件不存在，则创建它，并返回 '{}'

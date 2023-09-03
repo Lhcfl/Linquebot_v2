@@ -1,4 +1,5 @@
 import Process from 'process';
+import { getFileLocks } from './file_lock.js';
 /**
  * 向父进程发送的消息
  */
@@ -25,18 +26,29 @@ export interface ExitInfo {
 }
 
 /**
+ * 等待文件写完，然后关闭
+ * @param info 退出信息/退出码
+ */
+function waitFileAndExit(info: ExitInfo | number) {
+  console.log(getFileLocks().locks);
+  getFileLocks().events.on('lock_clear', () => {
+    console.log('?');
+    if (typeof info === 'number') {
+      Process.exit(info);
+    }
+    if (Process.send) {
+      Process.send(JSON.stringify(info.message || {}));
+    }
+    Process.exit(info.exit_code);
+  });
+}
+
+/**
  * 退出进程
  * @param info 退出信息/退出码
- * @todo 提防关闭时引发数据库错误
  */
 function exit(info: ExitInfo | number) {
-  if (typeof info === 'number') {
-    Process.exit(info);
-  }
-  if (Process.send) {
-    Process.send(JSON.stringify(info.message || {}));
-  }
-  Process.exit(info.exit_code);
+  waitFileAndExit(info);
 }
 
 export default {

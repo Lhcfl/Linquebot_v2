@@ -23,7 +23,8 @@ export class SuperManager {
 
   init() {
     this._app.registCommand({
-      chat_type: ['pm'],
+      chat_type: 'all',
+      premission: 'sysAdmin',
       command: 'reboot',
       description: '重启bot',
       handle: this.reboot

@@ -1,5 +1,4 @@
 // 读取配置和模块
-import fs from 'fs';
 // import Promise from 'promise';
 import yaml from 'js-yaml';
 // import readline from 'readline'
@@ -18,6 +17,7 @@ import TelegramBot from 'node-telegram-bot-api';
 import { CreateBot } from '@/types/bridge.js';
 import { reverseReadFileIfExists } from '@/util/fs.js';
 import chalk from 'chalk';
+import { writeFileSafe } from './file_lock.js';
 
 /**
  * `@/types/app.ts` 的 App 实现
@@ -131,7 +131,7 @@ export class Application implements App {
   };
 
   private writeConfig(config_data: string) {
-    fs.writeFileSync('./config.yml', config_data);
+    writeFileSafe('./config.yml', config_data);
   };
 
   get registCommand() {
