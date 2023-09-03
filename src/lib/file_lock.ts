@@ -4,9 +4,9 @@ import { EventEmitter } from 'events';
 type writeFileFunction = () => void;
 
 class FileLocks {
-  locks: number = 0;
-  queues: {[key: string]: functionQueue} = {};
-  eve = new EventEmitter();
+  private locks: number = 0;
+  private queues: {[key: string]: functionQueue} = {};
+  private eve = new EventEmitter();
   constructor() {
     this.locks = 0;
     setInterval(() => {
@@ -33,6 +33,13 @@ class FileLocks {
     if (this.locks === 0) {
       this.eve.emit('lock_clear');
     }
+  }
+
+  /**
+   * 被锁住的文件数
+   */
+  get lockCount() {
+    return this.locks;
   }
 
   get events() {
@@ -75,6 +82,12 @@ class functionQueue {
   }
 }
 
+/**
+ * 通过文件锁安全写入文件
+ * @param file 要写入的文件
+ * @param data 要写入的数据
+ * @param options 参见fs.writeFileSync
+ */
 export async function writeFileSafe(
   file: fs.PathOrFileDescriptor,
   data: string | NodeJS.ArrayBufferView,
@@ -84,6 +97,11 @@ export async function writeFileSafe(
     fs.writeFileSync(file, data, options);
   });
 }
+
+/**
+ * 获取文件锁模块
+ * @returns 文件锁模块
+ */
 export function getFileLocks() {
   return fileLocks;
 }
