@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { BotCommand, Message } from 'node-telegram-bot-api';
+import TelegramBot, { BotCommand, Message } from 'node-telegram-bot-api';
 import { App } from '@/types/app.js';
 
 /**
@@ -19,16 +19,15 @@ export type handleFunction = (app: App, message: Message) => void;
 export interface CommandConfig {
   /**
    * 描述命令在哪类聊天中生效。
-   * 默认 'all'
-   * @todo 本功能尚未实现
+   * 未指定则默认等同于 'all'
    */
-  chat_type?: 'all' | ['pm' | 'group'];
+  chat_type?: 'all' | [TelegramBot.ChatType];
   /**
    * 描述该命令的适用权限范围
    * 默认 'all'
-   * @todo 本功能尚未实现
+   * @todo 'groupAdmin' 'groupOwner' 尚未实现
    */
-  premission?: 'all' | 'groupAdmin' | 'superAdmin'
+  premission?: 'all' | 'groupAdmin' | 'groupOwner' | 'sysAdmin'
   /**
    * 消息处理函数
    */
@@ -65,9 +64,9 @@ export function registCommand(config: CommandConfig) {
 export interface MessageHandleConfig {
   /**
    * 描述命令在哪类聊天中生效。
-   * @todo 本功能尚未实现
+   * 未指定则默认等同于 'all'
    */
-  chat_type: 'all' | ['pm', 'group'];
+  chat_type?: 'all' | [TelegramBot.ChatType];
   /**
    * 消息处理函数
    */
@@ -83,9 +82,9 @@ export interface MessageHandleConfig {
 export interface replyHandleConfig {
   /**
    * 描述命令在哪类聊天中生效。
-   * @todo 本功能尚未实现
+   * 未指定则默认等同于 'all'
    */
-  chat_type: 'all' | ['pm', 'group'];
+  chat_type?: 'all' | [TelegramBot.ChatType];
   /**
    * 消息处理函数
    */
@@ -112,6 +111,49 @@ export function registReplyHandle(config: replyHandleConfig) {
   replyHandles.push(config);
 }
 
+export interface canUseCommandResult {
+  /**
+   * 是否成功
+   */
+  success: boolean
+  /**
+   * 若失败，失败原因
+   */
+  error_message: 'success' | 'permission denied' | 'in the wrong chat'
+}
+/**
+ * 判断此环境是否允许运行command
+ * @param app App
+ * @param message 消息
+ * @param cmd 命令名（string）
+ * @returns 是否允许运行
+ */
+export function canUseCommand(app: App, message: Message, cmd: string): canUseCommandResult {
+  if (
+    commands[cmd].premission === 'sysAdmin' &&
+    !(message.from?.id && app.config.bot_sysadmin_id.includes(message.from?.id))
+  ) {
+    return {
+      success: false,
+      error_message: 'permission denied',
+    };
+  }
+  if (
+    commands[cmd].chat_type &&
+    commands[cmd].chat_type !== 'all' &&
+    !commands[cmd].chat_type?.includes(message.chat.type)
+  ) {
+    return {
+      success: false,
+      error_message: 'in the wrong chat',
+    };
+  }
+  return {
+    success: true,
+    error_message: 'success',
+  };
+}
+
 /**
  * Parse command and execute
  */
@@ -130,7 +172,12 @@ export function commandParser(app: App, message: Message) {
       message_text = '';
     }
     if (botOnOff(app, message) === true || commands[cmd].off_mode === true) {
-      commands[cmd].handle?.call(undefined, app, message, message_text);
+      const canUse = canUseCommand(app, message, cmd);
+      if (canUse.success) {
+        commands[cmd].handle?.call(undefined, app, message, message_text);
+      } else {
+        app.bot.sendMessage(message.chat.id, canUse.error_message);
+      }
     }
   }
 }

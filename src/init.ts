@@ -22,6 +22,7 @@ superManager.init();
 app.bot.on('message', (msg) => {
   if (Number(new Date)/1000 - msg.date > app.config.outdate_seconds) {
     console.log('古老消息被忽略。详见 config.outdate_seconds');
+    return;
   }
   console.log(msg);
   commandParser(app, msg);
@@ -65,6 +66,9 @@ function setBotCommand() {
   const botCommands: BotCommand[] = [];
   // eslint-disable-next-line guard-for-in
   for (const command in getCommands()) {
+    if (getCommands()[command].premission === 'sysAdmin') {
+      continue;
+    }
     if (/^[a-z_][a-z0-9_]+$/.test(command)) {
       botCommands.push({
         command,

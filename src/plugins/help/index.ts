@@ -1,5 +1,5 @@
 import { PluginInit } from '@/types/plugin.js';
-import { getCommands, getGlobalMessageHandles } from '../../lib/command.js';
+import { canUseCommand, getCommands, getGlobalMessageHandles } from '../../lib/command.js';
 
 const init: PluginInit = (app) => {
   console.log('help loaded!');
@@ -10,7 +10,9 @@ const init: PluginInit = (app) => {
       let help_text = `OoO这里是${App.config?.bot_name}的帮助：`;
       // eslint-disable-next-line guard-for-in
       for (const command in getCommands()) {
-        help_text += `\n${App.config?.command_style}${command} : ${getCommands()[command].description}`;
+        if (canUseCommand(App, message, command).success) {
+          help_text += `\n${App.config?.command_style}${command} : ${getCommands()[command].description}`;
+        }
       }
       const glh = getGlobalMessageHandles();
       if (glh?.length) {
