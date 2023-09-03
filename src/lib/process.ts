@@ -30,7 +30,6 @@ export interface ExitInfo {
  * @param info 退出信息/退出码
  */
 function waitFileAndExit(info: ExitInfo | number) {
-  console.log(getFileLocks().locks);
   getFileLocks().events.on('lock_clear', () => {
     console.log('?');
     if (typeof info === 'number') {
