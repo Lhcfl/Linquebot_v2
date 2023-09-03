@@ -1,5 +1,9 @@
 # Linquebot_v2
 
+![build status](https://github.com/Lhcfl/Linquebot_v2/actions/workflows/build_check.yml/badge.svg)
+![doc status](https://github.com/Lhcfl/Linquebot_v2/actions/workflows/tsdoc.yml/badge.svg)
+![lint status](https://github.com/Lhcfl/Linquebot_v2/actions/workflows/lint_check.yml/badge.svg)
+
 ## How to use
 
 复制 `config.example.yml` 到 `config.yml`
