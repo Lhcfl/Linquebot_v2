@@ -3,8 +3,8 @@ import fs from 'fs';
 // import Promise from 'promise';
 import yaml from 'js-yaml';
 // import readline from 'readline'
-import std from '@/lib/std.js';
-import fatalError from '@/lib/fatal_error.js';
+import std from '@/util/std.js';
+import fatalError from '@/util/fatal_error.js';
 import db from '@/lib/db.js';
 import {
   registCommand,
@@ -13,7 +13,7 @@ import {
 } from '@/lib/command.js';
 import { App } from '@/types/app.js';
 import { YamlConfig } from '@/types/config.js';
-import process from 'process';
+import process from '@/lib/process.js';
 import TelegramBot from 'node-telegram-bot-api';
 import { CreateBot } from '@/types/bridge.js';
 import { reverseReadFileIfExists } from '@/util/fs.js';

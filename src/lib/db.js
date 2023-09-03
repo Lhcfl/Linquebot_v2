@@ -92,7 +92,11 @@ class DB {
     safeWriteFile(this._filePath, JSON.stringify(this._raw_db_obj));
   }
   _getFromDB() {
-    this._raw_db_obj = JSON.parse(safeReadFile(this._filePath));
+    try {
+      this._raw_db_obj = JSON.parse(safeReadFile(this._filePath));
+    } catch (err) {
+      console.error(err);
+    }
   }
 };
 DB._defaultObject = {};
