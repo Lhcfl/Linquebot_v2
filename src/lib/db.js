@@ -128,13 +128,13 @@ function setDefault(db_class, obj) {
 
 class UserDB extends DB {
   constructor(uid) {
-    super(`data/users/${safeFileName(uid)}.json`);
+    super(`../data/users/${safeFileName(uid)}.json`);
     this._uid = uid;
   }
 };
 class GroupUserDB extends DB {
   constructor(chatId, uid) {
-    super(`data/${safeFileName(chatId)}/users/${safeFileName(uid)}.json`);
+    super(`../data/${safeFileName(chatId)}/users/${safeFileName(uid)}.json`);
     this._uid = uid;
     this._chatId = chatId;
   }
@@ -148,7 +148,7 @@ class ChatDB extends DB {
   _chatId;
   _user_caches = {};
   constructor(chatId) {
-    super(`data/${safeFileName(chatId)}/main.json`);
+    super(`../data/${safeFileName(chatId)}/main.json`);
     this._chatId = chatId;
   }
   /**
