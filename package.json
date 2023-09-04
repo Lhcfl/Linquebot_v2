@@ -10,8 +10,9 @@
     "build": "tsc && tsc-alias",
     "lint": "eslint . --ext .ts,.js",
     "lint:fix": "eslint . --fix --ext .ts,.js",
-    "prepare": "husky install",
-    "doc:generate": "typedoc"
+    "prepare": "if [ \"$NODE_ENV\" != \"production\" ]; then husky install; fi",
+    "doc:generate": "typedoc",
+    "release": "npm run build && docker build --tag linquebot-docker ."
   },
   "repository": {
     "type": "git",
