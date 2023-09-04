@@ -9,6 +9,9 @@ WORKDIR /app
 # where available (npm@5+)
 COPY ["package.json", "package-lock.json*", "./"]
 
+RUN apt update
+RUN apt install graphviz -y
+RUN apt install -y --force-yes --no-install-recommends fonts-wqy-microhei
 
 RUN npm ci --omit=dev
 RUN npm install --production
