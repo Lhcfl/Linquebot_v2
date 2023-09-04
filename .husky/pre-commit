@@ -1,4 +1,19 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
+if which pnpm >/dev/null; then
+    pack=pnpm
+elif which yarn >/dev/null; then
+    pack=yarn
+else
+    pack=npm
+fi
 
-npm run lint
+function chain() {
+    while read cmd; do
+        eval $cmd || exit $?
+    done
+}
+
+chain <<EOF
+$pack run lint
+EOF
