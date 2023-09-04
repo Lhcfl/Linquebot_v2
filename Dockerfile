@@ -10,12 +10,13 @@ WORKDIR /app
 COPY ["package.json", "package-lock.json*", "./"]
 
 
+RUN npm ci --omit=dev
 RUN npm install --production
-# If you are building your code for production
-# RUN npm ci --omit=dev
 
 # Bundle app source
-COPY . .
+COPY dist/ .
+COPY config.* ./
 
 
-CMD [ "npm", "run build" ]
+
+CMD [ "node", "index.js" ]
