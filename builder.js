@@ -31,7 +31,7 @@ function logCommand(message, func) {
 
 commands.forEach((c) => {
   logCommand('> ' + c, () => {
-    execSync(c, {stdio: 'inherit'});
+    execSync(c, { stdio: 'inherit' });
   });
 });
 

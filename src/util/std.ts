@@ -21,10 +21,10 @@ export interface Std {
 }
 
 const std: Std = {
-  questionSync: async function(message, fn): Promise<void> {
+  questionSync: async function (message, fn): Promise<void> {
     const rd = readline.createInterface({
       input: process.stdin,
-      output: process.stdout
+      output: process.stdout,
     });
     return new Promise((resolve) => {
       rd.question(message, (answer) => {

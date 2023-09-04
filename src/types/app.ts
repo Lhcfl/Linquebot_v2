@@ -1,6 +1,10 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { YamlConfig } from './config.js';
-import { registCommand, registGlobalMessageHandle, registReplyHandle } from '@/lib/command.js';
+import {
+  registCommand,
+  registGlobalMessageHandle,
+  registReplyHandle,
+} from '@/lib/command.js';
 import { Std } from '@/util/std.js';
 
 export interface App {

@@ -5,12 +5,17 @@
  */
 function rand(app, message, message_text) {
   const result = Math.floor(Math.random() * 101);
-  let username = message.from?.first_name ? message.from?.first_name : message.from?.username;
+  let username = message.from?.first_name
+    ? message.from?.first_name
+    : message.from?.username;
   if (message.from?.last_name) {
     username += ' ' + message.from?.last_name;
   }
   if (message_text) {
-    app.bot.sendMessage(message.chat.id, `${username} ${message_text} 的概率是: ${result}%`);
+    app.bot.sendMessage(
+      message.chat.id,
+      `${username} ${message_text} 的概率是: ${result}%`,
+    );
   } else {
     app.bot.sendMessage(message.chat.id, `${username} 掷出了: ${result}`);
   }
@@ -24,7 +29,10 @@ function rand(app, message, message_text) {
 function randnoid(app, message, message_text) {
   const result = Math.floor(Math.random() * 101);
   if (message_text) {
-    app.bot.sendMessage(message.chat.id, `${message_text} 的概率是: ${result}%`);
+    app.bot.sendMessage(
+      message.chat.id,
+      `${message_text} 的概率是: ${result}%`,
+    );
   }
 }
 

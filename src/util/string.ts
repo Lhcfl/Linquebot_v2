@@ -3,8 +3,9 @@
  */
 export const parseProxyUrl = (proxyUrl: string) => {
   const splitted = proxyUrl.split('://');
-  if (splitted.length !== 2)
-  {throw new Error('Invalid proxy url');}
+  if (splitted.length !== 2) {
+    throw new Error('Invalid proxy url');
+  }
   const [protocol, host] = splitted;
   const [splittedHost, port] = host.split(':');
   return {

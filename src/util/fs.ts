@@ -8,19 +8,18 @@ import fs from 'fs';
  */
 export const readFileIfExists = (
   fileName: string,
-  options: { encoding: BufferEncoding; flag?: string | undefined; } | undefined = { encoding: 'utf-8' }
+  options:
+    | { encoding: BufferEncoding; flag?: string | undefined }
+    | undefined = { encoding: 'utf-8' },
 ) => {
   const fileExist = fs.existsSync(fileName);
-  if (!fileExist) {return null;}
+  if (!fileExist) {
+    return null;
+  }
   return fs.readFileSync(fileName, options);
 };
 
-const defaultDirs = [
-  './',
-  '../',
-  './config/',
-  '../config/'
-];
+const defaultDirs = ['./', '../', './config/', '../config/'];
 
 /**
  * 从里到外读取文件，如果文件不存在则返回null
@@ -31,11 +30,15 @@ const defaultDirs = [
 export const reverseReadFileIfExists = (
   fileName: string,
   reverseDirs: string[] = defaultDirs,
-  options: { encoding: BufferEncoding; flag?: string | undefined; } | undefined = { encoding: 'utf-8' }
+  options:
+    | { encoding: BufferEncoding; flag?: string | undefined }
+    | undefined = { encoding: 'utf-8' },
 ) => {
   for (const dir of reverseDirs) {
     const fileContent = readFileIfExists(dir + fileName, options);
-    if (fileContent !== null) {return fileContent;}
+    if (fileContent !== null) {
+      return fileContent;
+    }
   }
   return null;
 };

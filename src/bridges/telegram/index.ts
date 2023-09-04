@@ -7,10 +7,7 @@ import { parseProxyUrl } from '@/util/string.js';
  * 创建TelegramBot
  * @returns new TelegramBot
  */
-export const createBot: CreateBot = ({
-  bot_token,
-  proxy_address,
-}) => {
+export const createBot: CreateBot = ({ bot_token, proxy_address }) => {
   let bot;
   if (proxy_address) {
     const { protocol, host, port } = parseProxyUrl(proxy_address);
@@ -23,7 +20,7 @@ export const createBot: CreateBot = ({
           port,
         }),
         url: proxy_address,
-      }
+      },
     });
   } else {
     bot = new TelegramBot(bot_token, {

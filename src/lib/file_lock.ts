@@ -5,7 +5,7 @@ type writeFileFunction = () => void;
 
 class FileLocks {
   private locks: number = 0;
-  private queues: {[key: string]: functionQueue} = {};
+  private queues: { [key: string]: functionQueue } = {};
   private eve = new EventEmitter();
   constructor() {
     this.locks = 0;
@@ -23,12 +23,12 @@ class FileLocks {
   }
 
   addLock() {
-    this.locks ++;
+    this.locks++;
   }
 
   removeLock() {
     if (this.locks >= 1) {
-      this.locks --;
+      this.locks--;
     }
     if (this.locks === 0) {
       this.eve.emit('lock_clear');
@@ -47,12 +47,12 @@ class FileLocks {
   }
 }
 
-const fileLocks = new FileLocks;
+const fileLocks = new FileLocks();
 
 class functionQueue {
   private queue: ('running' | writeFileFunction)[] = [];
-  private _fl : FileLocks;
-  constructor (fl : FileLocks) {
+  private _fl: FileLocks;
+  constructor(fl: FileLocks) {
     this._fl = fl;
   }
   push(fn: writeFileFunction) {
@@ -91,7 +91,7 @@ class functionQueue {
 export async function writeFileSafe(
   file: fs.PathOrFileDescriptor,
   data: string | NodeJS.ArrayBufferView,
-  options?: fs.WriteFileOptions
+  options?: fs.WriteFileOptions,
 ) {
   fileLocks.find(String(file)).push(() => {
     fs.writeFileSync(file, data, options);

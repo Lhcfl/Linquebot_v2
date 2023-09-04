@@ -3,8 +3,11 @@ import { PluginInit } from '@/types/plugin.js';
 import { App } from '@/types/app.js';
 
 function getName(message: Message): string {
-  let username:string = message.from?.first_name ?
-    message.from?.first_name : (message.from?.username ? message.from?.username : '');
+  let username: string = message.from?.first_name
+    ? message.from?.first_name
+    : message.from?.username
+      ? message.from?.username
+      : '';
   if (message.from?.last_name) {
     username += ' ' + message.from?.last_name;
   }
@@ -12,7 +15,9 @@ function getName(message: Message): string {
 }
 
 function htmlify(str: string | undefined): string {
-  if (!str) {str = '';}
+  if (!str) {
+    str = '';
+  }
   str = str.replaceAll('&', '&amp;');
   str = str.replaceAll('<', '&lt;');
   str = str.replaceAll('>', '&gt;');
@@ -22,7 +27,9 @@ function htmlify(str: string | undefined): string {
 
 const rong = (app: App, msg: Message, msgTxt?: string, rev?: boolean) => {
   msgTxt = htmlify(msgTxt?.trim());
-  if (msgTxt === '') {msgTxt = 'rong了';}
+  if (msgTxt === '') {
+    msgTxt = 'rong了';
+  }
   if (typeof msgTxt === 'string' && msgTxt.length >= 1) {
     let a = getName(msg);
     let b = undefined;
@@ -48,10 +55,14 @@ const rong = (app: App, msg: Message, msgTxt?: string, rev?: boolean) => {
         reply_to_message_id: msg.message_id,
       });
     } else {
-      app.bot?.sendMessage(msg.chat.id, `${A} ${msgTxt.substring(0, i)} ${B} ${msgTxt.substring(i + 1)}!`, {
-        parse_mode: 'HTML',
-        reply_to_message_id: msg.message_id,
-      });
+      app.bot?.sendMessage(
+        msg.chat.id,
+        `${A} ${msgTxt.substring(0, i)} ${B} ${msgTxt.substring(i + 1)}!`,
+        {
+          parse_mode: 'HTML',
+          reply_to_message_id: msg.message_id,
+        },
+      );
     }
   }
 };
@@ -64,7 +75,7 @@ const init: PluginInit = (app) => {
     handle: (Appl, msg, msgTxt) => {
       rong(Appl, msg, msgTxt);
     },
-    description: 'rong [str1?] [str2?] rong一下！'
+    description: 'rong [str1?] [str2?] rong一下！',
   });
   app.registCommand({
     chat_type: 'all',
@@ -72,7 +83,7 @@ const init: PluginInit = (app) => {
     handle: (Appl, msg, msgTxt) => {
       rong(Appl, msg, msgTxt, true);
     },
-    description: 'gnor [str1?] [str2?] 被rong一下！'
+    description: 'gnor [str1?] [str2?] 被rong一下！',
   });
 };
 

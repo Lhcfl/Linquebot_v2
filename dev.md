@@ -9,7 +9,7 @@ graph LR;
   bridge --"platform api"--> platform["Platforms(Telegram, etc.)"]
   bridge <--"linquebot api"--> index["index.js"]
 
-  
+
 
 ```
 
@@ -25,7 +25,7 @@ graph LR;
 
 主程序入口
 
-## bridges/ 
+## bridges/
 
 桥，负责用各自的api沟通群聊平台，转译为linquebot的api
 
@@ -46,4 +46,3 @@ graph LR;
 每个plugin单独为一个文件夹，响应插件定义的命令对应的动作。
 
 每个plugin有一个index.js作为入口，export一个init()
-

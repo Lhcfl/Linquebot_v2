@@ -6,7 +6,7 @@ export interface YamlConfig {
       // qq?: QQPlatform;
       [platform: string]: UnknownPlatform;
     };
-  }
+  };
   /**
    * The sysadmin ids of bot
    */

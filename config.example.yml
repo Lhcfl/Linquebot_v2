@@ -2,26 +2,26 @@
 # config.yml默认被git ignore
 
 platform:
-  enabled: "telegram"
+  enabled: 'telegram'
   settings:
     telegram:
-      bot_token: "xxxxxxxxxx:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      bot_token: 'xxxxxxxxxx:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
       # 设置代理。无需代理则注释下面这一行。
-      proxy_address: "http://proxy.com"
+      proxy_address: 'http://proxy.com'
     qq:
-      username: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      username: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
       # 设置代理。无需代理则注释下面这一行。
-      password: "http://proxy.com"
+      password: 'http://proxy.com'
 
 # The sysadmin ids of bot
 bot_sysadmin_id:
   - 123456789
 
 # bot的昵称，用于回复中的模式识别
-bot_name: "琳酱"
+bot_name: '琳酱'
 
-# TG风格： "/" QQ风格： "." 
-command_style: "/"
+# TG风格： "/" QQ风格： "."
+command_style: '/'
 
 # 轮询超时消息不处理时间（秒）
 outdate_seconds: 300

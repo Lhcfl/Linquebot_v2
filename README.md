@@ -37,7 +37,7 @@ import { PluginInit } from '@/types/plugin.js';
 
 const sayHello: commandHandleFunction = (app, msg) => {
   app.bot.sendMessage(msg.chat.id, 'hello, world!');
-},
+};
 
 const init: PluginInit = (app) => {
   console.log('plugin loaded!');
