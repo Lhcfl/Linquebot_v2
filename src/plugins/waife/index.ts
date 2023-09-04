@@ -23,16 +23,31 @@ function htmlify(str: string | undefined): string {
 
 function initialize_waifes(app: App, msg: Message) {
   if (!app.db.chat(msg.chat.id).waifes) {
+    /**
+     * 老婆卡池
+     */
     app.db.chat(msg.chat.id).waifes = [];
+    /**
+     * 老婆卡池id map
+     */
     app.db.chat(msg.chat.id).waife_ids = {};
   }
   if (!app.db.chat(msg.chat.id).waifemap) {
+    /**
+     * waifemap[a] id为a的用户的老婆
+     */
     app.db.chat(msg.chat.id).waifemap = {};
   }
   if (!app.db.chat(msg.chat.id).iduserMap) {
+    /**
+     * iduserMap[a] id为a的用户
+     */
     app.db.chat(msg.chat.id).iduserMap = {};
   }
   if (!app.db.chat(msg.chat.id).lastwaifedate) {
+    /**
+     * iduserMap[a] 大家上次抽老婆的日期
+     */
     app.db.chat(msg.chat.id).lastwaifedate = (new Date).toDateString();
   }
 }
