@@ -8,11 +8,4 @@ else
     pack=npm
 fi
 
-function chain() {
-    while read cmd; do
-        eval $cmd || exit $?
-    done
-}
-
-chain <<EOF
 $pack run lint
