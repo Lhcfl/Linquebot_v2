@@ -2,9 +2,9 @@
   "compilerOptions": {
     /* 请访问 https://aka.ms/tsconfig，了解有关此文件的详细信息 */
     /* 项目 */
-    // "incremental": true,                              /* 保存 .tsbuildinfo 文件以允许项目增量编译。 */
+    "incremental": true /* 保存 .tsbuildinfo 文件以允许项目增量编译。 */,
     // "composite": true,                                /* 启用允许将 TypeScript 项目与项目引用一起使用的约束。 */
-    // "tsBuildInfoFile": "./.tsbuildinfo",              /* 指定 .tsbuildinfo 增量编译文件的路径。 */
+    "tsBuildInfoFile": "./.tsbuildinfo" /* 指定 .tsbuildinfo 增量编译文件的路径。 */,
     // "disableSourceOfProjectReferenceRedirect": true,  /* 在引用复合项目时禁用首选源文件而不是声明文件。 */
     // "disableSolutionSearching": true,                 /* 在编辑时选择项目退出多项目引用检查。 */
     // "disableReferencedProjectLoad": true,             /* 减少 TypeScript 自动加载的项目数。 */
@@ -22,9 +22,9 @@
     // "useDefineForClassFields": true,                  /* 发出符合 ECMAScript 标准的类字段。 */
     // "moduleDetection": "auto",                        /* 控制用于检测模块格式 JS 文件的方法。 */
     /* 模块 */
-    "module": "NodeNext" /* 指定生成的模块代码。 */,
+    "module": "ESNext" /* 指定生成的模块代码。 */,
     // "rootDir": "./src", /* 指定源文件中的根文件夹。 */
-    "moduleResolution": "NodeNext" /* 指定 TypeScript 如何从给定的模块说明符查找文件。 */,
+    "moduleResolution": "Bundler" /* 指定 TypeScript 如何从给定的模块说明符查找文件。 */,
     "baseUrl": "." /* 指定基目录以解析非相关模块名称。 */,
     "paths": {
       "@": ["src"],

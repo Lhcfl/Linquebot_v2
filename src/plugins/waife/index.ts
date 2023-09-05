@@ -2,8 +2,14 @@ import { App } from '@/types/app.js';
 import { PluginInit } from '@/types/plugin.js';
 import { Message, User } from 'node-telegram-bot-api';
 import { tmpdir } from 'os';
-import fs from 'fs';
+import fs from 'fs/promises';
 import { spawn } from 'child_process';
+
+class Data {
+  waifes: User[] = [];
+  waifemap: { [uid: number]: { waife: User; date: string } } = {};
+  lastwaifedate: string = '';
+}
 
 function getName(user: User): string {
   let username: string = user.first_name ? user.first_name : user.username ? user.username : '';
@@ -92,9 +98,11 @@ async function getWaife(app: App, msg: Message) {
   if (!msg.from?.id) {
     return;
   }
-  if (new Date().toDateString() !== app.db.chat(msg.chat.id).lastwaifedate) {
-    app.db.chat(msg.chat.id).waifemap = {};
-    app.db.chat(msg.chat.id).lastwaifedate = new Date().toDateString();
+  await using lock = await app.newdb.db<Data>('waife');
+  const db = lock.data[msg.chat.id];
+  if (new Date().toDateString() !== db.lastwaifedate) {
+    db.waifemap = {};
+    db.lastwaifedate = new Date().toDateString();
   }
   if (app.db.chat(msg.chat.id).waifemap[msg.from?.id]) {
     app.bot.sendMessage(msg.chat.id, '你今天已经抽过老婆了哦！', {
@@ -141,34 +149,12 @@ async function getWaife(app: App, msg: Message) {
 
 async function renderGraph(id: string, src: string): Promise<Buffer> {
   const [fname, outname] = [`${tmpdir()}/${id}.gv`, `${tmpdir()}/${id}.png`];
-  await new Promise((res, rej) =>
-    fs.writeFile(fname, src, { encoding: 'utf-8' }, (err) => {
-      if (err) {
-        rej(err);
-      } else {
-        res({});
-      }
-    })
-  );
+  await fs.writeFile(fname, src, { encoding: 'utf8' });
   await new Promise((res, rej) => {
     const proc = spawn('dot', [fname, '-Tpng', '-o', outname]);
-    proc.on('close', (code) => {
-      if (code !== 0) {
-        rej(code);
-      } else {
-        res({});
-      }
-    });
+    proc.on('close', (code) => (code === 0 ? res(void 0) : rej(code)));
   });
-  return await new Promise((res, rej) =>
-    fs.readFile(outname, {}, (err, data) => {
-      if (err) {
-        rej(err);
-      } else {
-        res(data);
-      }
-    })
-  );
+  return await fs.readFile(outname);
 }
 
 async function getWaifeGraph(app: App, msg: Message) {
@@ -200,8 +186,7 @@ async function getWaifeGraph(app: App, msg: Message) {
       }
     }
   }
-  const src =
-    'digraph G {\n' + 'node[shape=box fontname="wqy-microhei"];\n' + txt.join('\n') + '\n}';
+  const src = 'digraph G {\n' + 'node[shape=box];\n' + txt.join('\n') + '\n}';
   console.log(src);
   const qidao = await app.bot.sendMessage(msg.chat.id, '少女祈祷中', {
     reply_to_message_id: msg.message_id,
@@ -221,6 +206,7 @@ async function getWaifeGraph(app: App, msg: Message) {
 }
 
 const init: PluginInit = (app) => {
+  app.newdb.register('waifes', { data: () => new Data() });
   app.registCommand({
     chat_type: ['group', 'supergroup'],
     command: 'waife',
