@@ -16,4 +16,3 @@ function chain() {
 
 chain <<EOF
 $pack run lint
-EOF
