@@ -13,7 +13,11 @@ const replyHandles: replyHandleConfig[] = [];
 
 let on_off_mode: (app: App, msg: Message) => boolean = () => true;
 
-export type commandHandleFunction = (app: App, message: Message, message_text?: string) => void;
+export type commandHandleFunction = (
+  app: App,
+  message: Message,
+  message_text?: string,
+) => void;
 export type handleFunction = (app: App, message: Message) => void;
 
 export interface CommandConfig {
@@ -27,7 +31,7 @@ export interface CommandConfig {
    * 默认 'all'
    * @todo 'groupAdmin' 'groupOwner' 尚未实现
    */
-  premission?: 'all' | 'groupAdmin' | 'groupOwner' | 'sysAdmin'
+  premission?: 'all' | 'groupAdmin' | 'groupOwner' | 'sysAdmin';
   /**
    * 消息处理函数
    */
@@ -115,11 +119,11 @@ export interface canUseCommandResult {
   /**
    * 是否成功
    */
-  success: boolean
+  success: boolean;
   /**
    * 若失败，失败原因
    */
-  error_message: 'success' | 'permission denied' | 'in the wrong chat'
+  error_message: 'success' | 'permission denied' | 'in the wrong chat';
 }
 /**
  * 判断此环境是否允许运行command
@@ -128,7 +132,11 @@ export interface canUseCommandResult {
  * @param cmd 命令名（string）
  * @returns 是否允许运行
  */
-export function canUseCommand(app: App, message: Message, cmd: string): canUseCommandResult {
+export function canUseCommand(
+  app: App,
+  message: Message,
+  cmd: string,
+): canUseCommandResult {
   if (
     commands[cmd].premission === 'sysAdmin' &&
     !(message.from?.id && app.config.bot_sysadmin_id.includes(message.from?.id))
@@ -159,7 +167,9 @@ export function canUseCommand(app: App, message: Message, cmd: string): canUseCo
  */
 export function commandParser(app: App, message: Message) {
   if (message.text?.startsWith(app.config.command_style)) {
-    const matched = message.text.substring(app.config.command_style.length).match(/[^\s@]+/);
+    const matched = message.text
+      .substring(app.config.command_style.length)
+      .match(/[^\s@]+/);
     if (!matched) {
       return;
     }
@@ -214,7 +224,9 @@ export function getReplyHandles(): replyHandleConfig[] {
  * 注册bot on off mode管理器
  * @param func 一个函数，调用后返回当前bot处于打开还是关闭状态
  */
-export function botOnOffRegister(func: (app: App, message: Message) => boolean) {
+export function botOnOffRegister(
+  func: (app: App, message: Message) => boolean,
+) {
   on_off_mode = func;
 }
 
@@ -224,7 +236,6 @@ export function botOnOffRegister(func: (app: App, message: Message) => boolean) 
  * @param msg 调用者传递的消息
  * @returns bot是否处于打开状态
  */
-export function botOnOff(app: App, msg: Message):boolean {
+export function botOnOff(app: App, msg: Message): boolean {
   return on_off_mode(app, msg);
 }
-

@@ -4,6 +4,7 @@ config.yml
 
 # lock文件
 pnpm-lock.yaml
+flake.lock
 
 # 构建产物
 dist

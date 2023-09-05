@@ -20,7 +20,7 @@ const superManager = new SuperManager(app);
 superManager.init();
 
 app.bot.on('message', (msg) => {
-  if (Number(new Date)/1000 - msg.date > app.config.outdate_seconds) {
+  if (Number(new Date()) / 1000 - msg.date > app.config.outdate_seconds) {
     console.log('古老消息被忽略。详见 config.outdate_seconds');
     return;
   }
@@ -40,7 +40,9 @@ app.bot.on('message', (msg) => {
 
 // 读取插件
 async function readPlugin(pluginDir: string) {
-  const subfolders = fs.readdirSync(pluginDir, { withFileTypes: true }).filter(entry => entry.isDirectory());
+  const subfolders = fs
+    .readdirSync(pluginDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory());
   const errs: string[] = [];
   let success: number = 0;
   for (const subfolder of subfolders) {
@@ -48,7 +50,7 @@ async function readPlugin(pluginDir: string) {
       console.log(`> 加载插件 ${subfolder.name}...`);
       const plugin = await import(`./plugins/${subfolder.name}/index.js`);
       plugin.init(app);
-      success ++;
+      success++;
     } catch (err) {
       errs.push(subfolder.name);
       console.error(err);

@@ -94,7 +94,7 @@ class DB {
       console.error(err);
     }
   }
-};
+}
 DB._defaultObject = {};
 DB.handler = {
   set(target, key, value) {
@@ -107,7 +107,7 @@ DB.handler = {
   },
   get(target, key) {
     if (typeof target[key] === 'function') {
-      return function(...args) {
+      return function (...args) {
         return target[key](args);
       };
     }
@@ -115,31 +115,29 @@ DB.handler = {
   },
 };
 /**
-* Set the default object of DB
-* @param {DB | ChatDB | UserDB | GroupUserDB } db_class DB class
-* @param {Object} obj The default object
-*/
+ * Set the default object of DB
+ * @param {DB | ChatDB | UserDB | GroupUserDB } db_class DB class
+ * @param {Object} obj The default object
+ */
 function setDefault(db_class, obj) {
   if (typeof obj === 'object') {
     db_class._defaultObject = Object.assign({}, db_class._defaultObject, obj);
   }
-};
-
+}
 
 class UserDB extends DB {
   constructor(uid) {
     super(`../data/users/${safeFileName(uid)}.json`);
     this._uid = uid;
   }
-};
+}
 class GroupUserDB extends DB {
   constructor(chatId, uid) {
     super(`../data/${safeFileName(chatId)}/users/${safeFileName(uid)}.json`);
     this._uid = uid;
     this._chatId = chatId;
   }
-};
-
+}
 
 /**
  * Database per chat
@@ -157,11 +155,14 @@ class ChatDB extends DB {
    */
   user(uid) {
     if (!this._user_caches[uid]) {
-      this._user_caches[uid] = new Proxy(new GroupUserDB(this._chatId, uid), GroupUserDB.handler);
+      this._user_caches[uid] = new Proxy(
+        new GroupUserDB(this._chatId, uid),
+        GroupUserDB.handler,
+      );
     }
     return this._user_caches[uid];
   }
-};
+}
 
 const db = {
   _chat_caches: {},
@@ -180,8 +181,8 @@ const db = {
   },
   get bot() {
     return this.chat('linquebot_database');
-  }
+  },
 };
 
 export default db;
-export { DB, UserDB, ChatDB, GroupUserDB, db, safeFileName, setDefault};
+export { DB, UserDB, ChatDB, GroupUserDB, db, safeFileName, setDefault };

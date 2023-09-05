@@ -10,8 +10,8 @@ export class SuperManager {
         exit_code: 0,
         message: {
           action: 'reboot',
-          message: '一名管理员要求重启bot'
-        }
+          message: '一名管理员要求重启bot',
+        },
       });
     }, 1000);
   };
@@ -27,7 +27,7 @@ export class SuperManager {
       premission: 'sysAdmin',
       command: 'reboot',
       description: '重启bot',
-      handle: this.reboot
+      handle: this.reboot,
     });
   }
 }

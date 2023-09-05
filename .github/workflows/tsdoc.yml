@@ -15,7 +15,7 @@ jobs:
           node-version: 18
       - run: npm install
       - run: npm run doc:generate
-      
+
       - name: Configure Git # 配置Git
         env:
           DEPLOY_PRI: ${{secrets.DEPLOY_PRI}} # 这里就是刚刚配置的私钥了
@@ -30,10 +30,9 @@ jobs:
           git config --global user.name '$DEPLOY_PRI'
           git config --global user.email '$DEPLOY_PRI'
 
-
       - name: Commit documentation # 提交文档到Git仓库
         env:
-          GIT_URL: "git@github.com:Lhcfl/Linquebot_v2.git" # 项目的地址，注意要用SSH格式的。
+          GIT_URL: 'git@github.com:Lhcfl/Linquebot_v2.git' # 项目的地址，注意要用SSH格式的。
         run: |
           cd docs
           git init

@@ -1,7 +1,11 @@
 import child_process from 'child_process';
 import { ProcessMessage } from './lib/process.js';
+import path from 'path';
+import process from 'process';
+
 function reload() {
   console.log('启动init');
+  process.chdir(path.dirname(new URL(import.meta.url).pathname));
   const cp = child_process.fork('./init.js');
 
   cp.on('message', (message) => {

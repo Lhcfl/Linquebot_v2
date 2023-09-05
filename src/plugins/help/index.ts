@@ -1,5 +1,9 @@
 import { PluginInit } from '@/types/plugin.js';
-import { canUseCommand, getCommands, getGlobalMessageHandles } from '../../lib/command.js';
+import {
+  canUseCommand,
+  getCommands,
+  getGlobalMessageHandles,
+} from '../../lib/command.js';
 
 const init: PluginInit = (app) => {
   console.log('help loaded!');
@@ -11,7 +15,9 @@ const init: PluginInit = (app) => {
       // eslint-disable-next-line guard-for-in
       for (const command in getCommands()) {
         if (canUseCommand(App, message, command).success) {
-          help_text += `\n${App.config?.command_style}${command} : ${getCommands()[command].description}`;
+          help_text += `\n${App.config?.command_style}${command} : ${
+            getCommands()[command].description
+          }`;
         }
       }
       const glh = getGlobalMessageHandles();
