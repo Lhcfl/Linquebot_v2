@@ -82,10 +82,21 @@ export interface DBError {
 }
 
 /**
- * Implements the
+ * Implements the storage for [StorageDB]()
  */
 export interface StorageDBStorage {
+  /**
+   * Read data from file [fname]()
+   *
+   * @param fname path to the data file
+   */
   read(fname: string): Promise<{ [k: string | number]: never }>;
+  /**
+   * Write data to file [fname]()
+   *
+   * @param fname path to the data file
+   * @param data data to be written
+   */
   write(fname: string, data: { [k: string | number]: never }): Promise<void>;
 }
 

@@ -9,3 +9,4 @@ flake.lock
 # 构建产物
 dist
 docs/
+coverage

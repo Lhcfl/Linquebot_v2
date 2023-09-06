@@ -1,0 +1,2 @@
+test('simple storage', async () => {
+});
