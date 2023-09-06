@@ -15,7 +15,7 @@ const bot_status: commandHandleFunction = (app, msg) => {
     msg.chat.id,
     db.chat(msg.chat.id).turned_off
       ? `${app.config?.bot_name}关机中`
-      : `${app.config?.bot_name}开机中`,
+      : `${app.config?.bot_name}开机中`
   );
 };
 

@@ -1,40 +1,43 @@
-/* eslint-disable no-unused-vars */
 import TelegramBot, { BotCommand, Message } from 'node-telegram-bot-api';
 import { App } from '@/types/app.js';
 
 /**
- * @type {{String: CommandConfig}}
+ * 变量区
  */
 const commands: {
-  [key: string]: CommandConfig;
+  [key: string]: CommandHandleConfig;
 } = {};
 const globalMessageHandles: MessageHandleConfig[] = [];
-const replyHandles: replyHandleConfig[] = [];
+const replyHandles: ReplyHandleConfig[] = [];
 
+/**
+ * 计算bot on和off的状态
+ */
 let on_off_mode: (app: App, msg: Message) => boolean = () => true;
 
-export type commandHandleFunction = (
-  app: App,
-  message: Message,
-  message_text?: string,
-) => void;
+export type commandHandleFunction = (app: App, message: Message, message_text?: string) => void;
 export type handleFunction = (app: App, message: Message) => void;
 
-export interface CommandConfig {
+export interface _HandleConfigBase_ {
   /**
-   * 描述命令在哪类聊天中生效。
+   * 描述Config在哪类聊天中生效。
    * 未指定则默认等同于 'all'
    */
   chat_type?: 'all' | TelegramBot.ChatType[];
   /**
-   * 描述该命令的适用权限范围
+   * 描述该Config的适用权限范围
    * 默认 'all'
    * @todo 'groupAdmin' 'groupOwner' 尚未实现
    */
   premission?: 'all' | 'groupAdmin' | 'groupOwner' | 'sysAdmin';
   /**
-   * 消息处理函数
+   * bot所需要处理的命令提示文字。256字以内。
+   * Description of the command; 1-256 characters.
    */
+  description?: BotCommand['description'];
+}
+
+export interface CommandHandleConfig extends _HandleConfigBase_ {
   handle: commandHandleFunction;
   /**
    * bot所需要处理的命令。
@@ -44,12 +47,7 @@ export interface CommandConfig {
    */
   command: string;
   /**
-   * bot所需要处理的命令提示文字。256字以内。
-   * Description of the command; 1-256 characters.
-   */
-  description?: BotCommand['description'];
-  /**
-   * 描述该命令是否在bot off的情况下仍然可以使用。默认false。
+   * 描述该Config是否在bot off的情况下仍然可以使用。默认false。
    */
   off_mode?: boolean;
 }
@@ -58,19 +56,14 @@ export interface CommandConfig {
  * 注册一个斜杠Bot指令.
  * @param config 请参阅commandConfig
  */
-export function registCommand(config: CommandConfig) {
+export function registCommand(config: CommandHandleConfig) {
   if (commands[config.command]) {
     throw `存在两个相同的command \`${config.command}\``;
   }
   commands[config.command] = config;
 }
 
-export interface MessageHandleConfig {
-  /**
-   * 描述命令在哪类聊天中生效。
-   * 未指定则默认等同于 'all'
-   */
-  chat_type?: 'all' | TelegramBot.ChatType[];
+export interface MessageHandleConfig extends _HandleConfigBase_ {
   /**
    * 消息处理函数
    */
@@ -80,23 +73,15 @@ export interface MessageHandleConfig {
    */
   description: string;
 }
+
 /**
  * 回复消息处理配置
  */
-export interface replyHandleConfig {
-  /**
-   * 描述命令在哪类聊天中生效。
-   * 未指定则默认等同于 'all'
-   */
-  chat_type?: 'all' | TelegramBot.ChatType[];
+export interface ReplyHandleConfig extends _HandleConfigBase_ {
   /**
    * 消息处理函数
    */
   handle: handleFunction;
-  /**
-   *描述插件为什么要使用回复消息处理
-   */
-  description?: string;
 }
 
 /**
@@ -111,10 +96,13 @@ export function registGlobalMessageHandle(config: MessageHandleConfig) {
  * 注册回复消息处理器
  * @param config replyHandleConfig
  */
-export function registReplyHandle(config: replyHandleConfig) {
+export function registReplyHandle(config: ReplyHandleConfig) {
   replyHandles.push(config);
 }
 
+/**
+ * canUseCommand 的返回值类型
+ */
 export interface canUseCommandResult {
   /**
    * 是否成功
@@ -125,6 +113,7 @@ export interface canUseCommandResult {
    */
   error_message: 'success' | 'permission denied' | 'in the wrong chat';
 }
+
 /**
  * 判断此环境是否允许运行command
  * @param app App
@@ -132,11 +121,7 @@ export interface canUseCommandResult {
  * @param cmd 命令名（string）
  * @returns 是否允许运行
  */
-export function canUseCommand(
-  app: App,
-  message: Message,
-  cmd: string,
-): canUseCommandResult {
+export function canUseCommand(app: App, message: Message, cmd: string): canUseCommandResult {
   if (
     commands[cmd].premission === 'sysAdmin' &&
     !(message.from?.id && app.config.bot_sysadmin_id.includes(message.from?.id))
@@ -167,9 +152,7 @@ export function canUseCommand(
  */
 export function commandParser(app: App, message: Message) {
   if (message.text?.startsWith(app.config.command_style)) {
-    const matched = message.text
-      .substring(app.config.command_style.length)
-      .match(/[^\s@]+/);
+    const matched = message.text.substring(app.config.command_style.length).match(/[^\s@]+/);
     if (!matched) {
       return;
     }
@@ -199,8 +182,8 @@ export function commandParser(app: App, message: Message) {
  * @returns commands
  */
 export function getCommands(): {
-  [key: string]: CommandConfig;
-  } {
+  [key: string]: CommandHandleConfig;
+} {
   return commands;
 }
 
@@ -216,7 +199,7 @@ export function getGlobalMessageHandles(): MessageHandleConfig[] {
  * 获取所有的回复消息处理器。
  * @returns replyHandles
  */
-export function getReplyHandles(): replyHandleConfig[] {
+export function getReplyHandles(): ReplyHandleConfig[] {
   return replyHandles;
 }
 
@@ -224,9 +207,7 @@ export function getReplyHandles(): replyHandleConfig[] {
  * 注册bot on off mode管理器
  * @param func 一个函数，调用后返回当前bot处于打开还是关闭状态
  */
-export function botOnOffRegister(
-  func: (app: App, message: Message) => boolean,
-) {
+export function botOnOffRegister(func: (app: App, message: Message) => boolean) {
   on_off_mode = func;
 }
 

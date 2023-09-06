@@ -28,10 +28,10 @@
   "homepage": "https://github.com/Lhcfl/Linquebot_v2#readme",
   "devDependencies": {
     "@types/js-yaml": "^4.0.5",
-    "@types/node": "^20.5.7",
+    "@types/node": "^20.5.9",
     "@types/node-telegram-bot-api": "^0.61.7",
-    "@typescript-eslint/eslint-plugin": "^6.5.0",
-    "@typescript-eslint/parser": "^6.5.0",
+    "@typescript-eslint/eslint-plugin": "^6.6.0",
+    "@typescript-eslint/parser": "^6.6.0",
     "eslint": "^8.48.0",
     "eslint-config-discourse": "^3.6.0",
     "eslint-config-prettier": "^9.0.0",
@@ -39,13 +39,13 @@
     "prettier": "^3.0.3",
     "ts-node": "^10.9.1",
     "tsc-alias": "^1.8.7",
-    "typedoc": "^0.25.0",
+    "typedoc": "^0.25.1",
     "typescript": "^5.2.2"
   },
   "dependencies": {
     "chalk": "^5.3.0",
     "js-yaml": "^4.1.0",
     "node-telegram-bot-api": "^0.61.0",
-    "proxy-agent": "^6.3.0"
+    "proxy-agent": "^6.3.1"
   }
 }

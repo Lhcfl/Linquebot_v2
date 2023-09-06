@@ -20,15 +20,9 @@ const sendTarot: commandHandleFunction = (app, msg, txt) => {
     txt = '1';
   }
   const tarots = getTarots(app, txt);
-  app.bot?.sendMessage(
-    msg.chat.id,
-    `${getName(msg)}最近遇到了什么烦心事吗？让琳酱给你算一算:`,
-  );
+  app.bot?.sendMessage(msg.chat.id, `${getName(msg)}最近遇到了什么烦心事吗？让琳酱给你算一算:`);
   setTimeout(() => {
-    app.bot?.sendMessage(
-      msg.chat.id,
-      `${getName(msg)}抽到的牌组是：\n${tarots}`,
-    );
+    app.bot?.sendMessage(msg.chat.id, `${getName(msg)}抽到的牌组是：\n${tarots}`);
   }, 3000);
 };
 

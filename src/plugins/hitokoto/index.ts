@@ -22,13 +22,9 @@ const init: PluginInit = (app) => {
       const arg = msgTxt.split(' ').join('&c=');
       get_hitokoto(arg).then((res) => {
         console.log(res);
-        App.bot?.sendMessage(
-          msg.chat.id,
-          `${res.hitokoto} ${res.from ? '——' + res.from : ''}`,
-          {
-            reply_to_message_id: msg.message_id,
-          },
-        );
+        App.bot?.sendMessage(msg.chat.id, `${res.hitokoto} ${res.from ? '——' + res.from : ''}`, {
+          reply_to_message_id: msg.message_id,
+        });
       });
     },
     description: '一言',

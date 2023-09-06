@@ -155,10 +155,7 @@ class ChatDB extends DB {
    */
   user(uid) {
     if (!this._user_caches[uid]) {
-      this._user_caches[uid] = new Proxy(
-        new GroupUserDB(this._chatId, uid),
-        GroupUserDB.handler,
-      );
+      this._user_caches[uid] = new Proxy(new GroupUserDB(this._chatId, uid), GroupUserDB.handler);
     }
     return this._user_caches[uid];
   }

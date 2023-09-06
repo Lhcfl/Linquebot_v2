@@ -69,15 +69,10 @@ function gameEnded(msg: Message): boolean {
 // 从starter获取随机成语开局
 function setRandomChenyu(msg: Message, starter?: string): string {
   console.log(starter);
-  if (
-    starter === '' ||
-    starter === undefined ||
-    cylist[starter] === undefined
-  ) {
+  if (starter === '' || starter === undefined || cylist[starter] === undefined) {
     return setRandomChenyu(msg, py[Math.floor(Math.random() * py.length)]);
   } else {
-    const find: string =
-      cylist[starter][Math.floor(Math.random() * cylist[starter].length)];
+    const find: string = cylist[starter][Math.floor(Math.random() * cylist[starter].length)];
     if (!getJielongStatus(msg)) {
       clearJielongStatus(msg);
     }
@@ -120,9 +115,9 @@ function getJielongInfo(msg: Message): string {
     }
     uList.sort((a, b) => Number(b.score) - Number(a.score));
     for (let i = 0; i < uList.length; i++) {
-      res += `\n第${numToChinese(i + 1)}名: @${uList[i].username} ${
-        uList[i].score
-      }分，最多连击${uList[i].combo}次`;
+      res += `\n第${numToChinese(i + 1)}名: @${uList[i].username} ${uList[i].score}分，最多连击${
+        uList[i].combo
+      }次`;
     }
     return res;
   } else {
@@ -136,15 +131,12 @@ const startJielong: commandHandleFunction = (app, msg, starter) => {
       msg.chat.id,
       `现在正在游戏哦，上一个成语是 ${getJielongStatus(msg).stcy}，请接：${
         getJielongStatus(msg).st
-      }\n场上情况：${getJielongInfo(msg)}`,
+      }\n场上情况：${getJielongInfo(msg)}`
     );
   } else {
     if (starter?.length && starter?.length >= 3) {
       if (cy[starter] === undefined) {
-        app.bot?.sendMessage(
-          msg.chat.id,
-          `这个成语是什么，${app.config?.bot_name}不知道哦OoO`,
-        );
+        app.bot?.sendMessage(msg.chat.id, `这个成语是什么，${app.config?.bot_name}不知道哦OoO`);
         return;
       }
       db.chat(msg.chat.id).jielong_status = {
@@ -157,10 +149,7 @@ const startJielong: commandHandleFunction = (app, msg, starter) => {
         userStatus: {}, // 用户得分信息
         startAt: Number(new Date()), // 开始时间
       };
-      app.bot?.sendMessage(
-        msg.chat.id,
-        `游戏开始！请接 ${getJielongStatus(msg)?.st}`,
-      );
+      app.bot?.sendMessage(msg.chat.id, `游戏开始！请接 ${getJielongStatus(msg)?.st}`);
     } else {
       db.chat(msg.chat.id).jielong_status = {
         started: true,
@@ -173,9 +162,8 @@ const startJielong: commandHandleFunction = (app, msg, starter) => {
       setRandomChenyu(msg);
       app.bot?.sendMessage(
         msg.chat.id,
-        `游戏开始，${app.config
-          ?.bot_name}来给出第一个成语吧：${getJielongStatus(msg)
-          ?.stcy}，请接 ${getJielongStatus(msg)?.st}`,
+        `游戏开始，${app.config?.bot_name}来给出第一个成语吧：${getJielongStatus(msg)
+          ?.stcy}，请接 ${getJielongStatus(msg)?.st}`
       );
     }
   }
@@ -185,7 +173,7 @@ const stopJielong: commandHandleFunction = (app, msg) => {
   if (getJielongStatus(msg)?.started) {
     app.bot?.sendMessage(
       msg.chat.id,
-      `接龙被 @${msg.from?.username} 结束!\n最终情况：${getJielongInfo(msg)}`,
+      `接龙被 @${msg.from?.username} 结束!\n最终情况：${getJielongInfo(msg)}`
     );
     try {
       db.chat(msg.chat.id).jielong_status = {
@@ -202,8 +190,9 @@ const stopJielong: commandHandleFunction = (app, msg) => {
 const newMessageHandle: handleFunction = (app, msg) => {
   if (getJielongStatus(msg)?.started && msg.text && cy[msg.text]) {
     if (gameEnded(msg)) {
-      const res: string = `成语接龙结束啦！${app.config
-        ?.bot_name}来宣布结果：${getJielongInfo(msg)}`;
+      const res: string = `成语接龙结束啦！${app.config?.bot_name}来宣布结果：${getJielongInfo(
+        msg
+      )}`;
       app.bot?.sendMessage(msg.chat.id, res);
       db.chat(msg.chat.id).jielong_status = {};
       return;
@@ -234,8 +223,7 @@ const newMessageHandle: handleFunction = (app, msg) => {
           combo: 1,
         };
       }
-      userStatus[msg.from?.id].score =
-        Number(userStatus[msg.from?.id].score) + 1;
+      userStatus[msg.from?.id].score = Number(userStatus[msg.from?.id].score) + 1;
       // 判断combo
       if (!getJielongStatus(msg).combo) {
         getJielongStatus(msg).combo = 0;
@@ -247,7 +235,7 @@ const newMessageHandle: handleFunction = (app, msg) => {
         if (lastJielonger) {
           userStatus[lastJielonger].combo = Math.max(
             Number(userStatus[lastJielonger].combo),
-            Number(getJielongStatus(msg).combo),
+            Number(getJielongStatus(msg).combo)
           );
         }
         getJielongStatus(msg).combo = 1;
@@ -259,16 +247,14 @@ const newMessageHandle: handleFunction = (app, msg) => {
       if (Number(getJielongStatus(msg).combo) <= 2) {
         app.bot?.sendMessage(
           msg.chat.id,
-          `接龙成功！${getName(msg)} 分数+1。\n下一个开头：${
-            getJielongStatus(msg).st
-          }`,
+          `接龙成功！${getName(msg)} 分数+1。\n下一个开头：${getJielongStatus(msg).st}`
         );
       } else {
         app.bot?.sendMessage(
           msg.chat.id,
           `${getName(msg)} ${getJielongStatus(msg).combo} 连击！\n下一个开头：${
             getJielongStatus(msg).st
-          }`,
+          }`
         );
       }
     }
