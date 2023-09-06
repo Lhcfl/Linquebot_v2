@@ -82,7 +82,7 @@ export interface MessageHandleConfig extends _HandleConfigBase_ {
 /**
  * 回复消息处理配置
  */
-export interface ReplyHandleConfig {
+export interface ReplyHandleConfig extends _HandleConfigBase_ {
   /**
    * 消息处理函数
    */
