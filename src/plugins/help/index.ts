@@ -1,9 +1,5 @@
 import { PluginInit } from '@/types/plugin.js';
-import {
-  canUseCommand,
-  getCommands,
-  getGlobalMessageHandles,
-} from '../../lib/command.js';
+import { canUseCommand, getCommands, getGlobalMessageHandles } from '../../lib/command.js';
 
 const init: PluginInit = (app) => {
   console.log('help loaded!');

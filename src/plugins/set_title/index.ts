@@ -26,11 +26,7 @@ async function setTitle(app: App, msg: Message, title: string = '') {
         await app.bot.promoteChatMember(msg.chat.id, msg.from?.id, {
           can_pin_messages: true,
         });
-        await app.bot.setChatAdministratorCustomTitle(
-          msg.chat.id,
-          msg.from?.id,
-          title,
-        );
+        await app.bot.setChatAdministratorCustomTitle(msg.chat.id, msg.from?.id, title);
         app.bot.sendMessage(msg.chat.id, `设置成功，你现在是${title}了`, {
           reply_to_message_id: msg.message_id,
         });
@@ -49,13 +45,9 @@ async function setTitle(app: App, msg: Message, title: string = '') {
         errobj.message.includes('user is not an administrator') ||
         errobj.message.includes('CHAT_ADMIN_REQUIRED')
       ) {
-        app.bot.sendMessage(
-          msg.chat.id,
-          `${app.config.bot_name}还没这个权限哦`,
-          {
-            reply_to_message_id: msg.message_id,
-          },
-        );
+        app.bot.sendMessage(msg.chat.id, `${app.config.bot_name}还没这个权限哦`, {
+          reply_to_message_id: msg.message_id,
+        });
         return;
       }
       if (errobj.message.includes('ADMIN_RANK_EMOJI_NOT_ALLOWED')) {
