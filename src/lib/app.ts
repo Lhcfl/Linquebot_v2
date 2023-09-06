@@ -5,11 +5,7 @@ import yaml from 'js-yaml';
 import std from '@/util/std.js';
 import fatalError from '@/util/fatal_error.js';
 import db from '@/lib/db.js';
-import {
-  registCommand,
-  registGlobalMessageHandle,
-  registReplyHandle,
-} from '@/lib/command.js';
+import { registCommand, registGlobalMessageHandle, registReplyHandle } from '@/lib/command.js';
 import { App } from '@/types/app.js';
 import { YamlConfig } from '@/types/config.js';
 import process from '@/lib/process.js';
@@ -44,8 +40,8 @@ export class Application implements App {
       this._configExample = '';
       console.warn(
         chalk.yellow(
-          'No config.example.yml found. This program will not be able to provide a config example.',
-        ),
+          'No config.example.yml found. This program will not be able to provide a config example.'
+        )
       );
     }
   }
@@ -56,34 +52,23 @@ export class Application implements App {
     console.log(this.config);
     console.log('---------------');
     console.log('Initializing bot ...');
-    if (
-      this.config.platform.settings[this.config.platform.enabled] === undefined
-    ) {
-      console.log(
-        `未找到平台${this.config.platform.enabled}的配置，请检查config.yml`,
-      );
+    if (this.config.platform.settings[this.config.platform.enabled] === undefined) {
+      console.log(`未找到平台${this.config.platform.enabled}的配置，请检查config.yml`);
       process.exit(-1);
     }
-    console.log(
-      `Launching bot at Platform[${this.config.platform.enabled}]...`,
-    );
+    console.log(`Launching bot at Platform[${this.config.platform.enabled}]...`);
 
-    const createBot = (
-      await import(`../bridges/${this.config.platform.enabled}/index.js`)
-    ).createBot as CreateBot;
+    const createBot = (await import(`../bridges/${this.config.platform.enabled}/index.js`))
+      .createBot as CreateBot;
 
     try {
-      this._bot = createBot(
-        this.config.platform.settings[this.config.platform.enabled],
-      );
+      this._bot = createBot(this.config.platform.settings[this.config.platform.enabled]);
       if (!this._bot) {
         throw 'bot is undefined';
       }
     } catch (err) {
       console.log(`-------${chalk.red('[ERROR]')}--------`);
-      console.log(
-        'Launching bot failed. Please check the error information below:',
-      );
+      console.log('Launching bot failed. Please check the error information below:');
       console.error(err);
       process.exit(-1);
     }
@@ -140,7 +125,7 @@ export class Application implements App {
             console.log('请正确配置config.yml. 本程序将自动退出.');
           }
           process.exit(0);
-        },
+        }
       );
       return;
     }

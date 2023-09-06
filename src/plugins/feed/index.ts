@@ -5,10 +5,7 @@
 // 回复，回复时间，加好感度数，是否判断为吃过
 const food_data: [
   string[],
-  (
-    | [string, number, number, boolean][]
-    | (() => [string, number, number, boolean][])
-  ),
+  [string, number, number, boolean][] | (() => [string, number, number, boolean][]),
 ][] = [
   [
     ['冰淇淋', '雪糕'],
@@ -18,17 +15,7 @@ const food_data: [
     ],
   ],
   [
-    [
-      '天赋党',
-      '家长党',
-      '双性党',
-      '中奖党',
-      '年龄党',
-      '小朋友',
-      '欣然',
-      '某只小朋友',
-      '柴柴',
-    ],
+    ['天赋党', '家长党', '双性党', '中奖党', '年龄党', '小朋友', '欣然', '某只小朋友', '柴柴'],
     function () {
       const eat = [
         '煲汤吃掉',
@@ -79,18 +66,9 @@ const food_data: [
   [['企鹅'], [['和小朋友一起炖了！（<!change>', 500, 2, true]]],
   [['琳酱'], [['我才不吃自己呢！', 500, 0.02, false]]],
   [['linca', '锦心', '零卡'], [['锦心那么可爱，不吃锦心w', 500, 0.02, false]]],
-  [
-    ['seni', 'senioria', '刺猬', '小刺猬'],
-    [['seni那么可爱，不吃seniw', 500, 0.02, false]],
-  ],
-  [
-    ['dringsim', 'Dringsim'],
-    [['Dringsim那么可爱，不吃Dringsimw', 500, 0.02, false]],
-  ],
-  [
-    ['F2+B2', 'FFBB', 'F²+B²', '年明时分', '年明'],
-    [['好感度过高，不忍心吃x', 500, 0.02, false]],
-  ],
+  [['seni', 'senioria', '刺猬', '小刺猬'], [['seni那么可爱，不吃seniw', 500, 0.02, false]]],
+  [['dringsim', 'Dringsim'], [['Dringsim那么可爱，不吃Dringsimw', 500, 0.02, false]]],
+  [['F2+B2', 'FFBB', 'F²+B²', '年明时分', '年明'], [['好感度过高，不忍心吃x', 500, 0.02, false]]],
   [['藻云'], [['藻云那么可爱，不吃藻云w', 500, 0.02, false]]],
   [
     [
@@ -542,22 +520,10 @@ const food_data: [
     [['投喂成功！<!change>', 500, 2, true]],
   ],
   [
-    [
-      '高等数学',
-      '家暴党',
-      '线性代数',
-      '数学分析',
-      '数论',
-      '三角函数',
-      '微积分',
-      '',
-    ],
+    ['高等数学', '家暴党', '线性代数', '数学分析', '数论', '三角函数', '微积分', ''],
     [['猫猫听完死了', 500, 0, false]],
   ],
-  [
-    ['昏睡红茶', '野兽先辈', '田所浩二'],
-    [['啊啊啊啊啊啊啊啊啊啊啊（吼叫', 500, 1, true]],
-  ],
+  [['昏睡红茶', '野兽先辈', '田所浩二'], [['啊啊啊啊啊啊啊啊啊啊啊（吼叫', 500, 1, true]]],
   [['锟斤铐'], [['烫烫烫烫烫烫烫烫烫烫烫！！', 500, 0, false]]],
   [
     ['鸡鸡', 'jb', '鸡巴', '奶子', '核弹', '铀-235', '毒药', '屎', 'bug'],
@@ -566,8 +532,7 @@ const food_data: [
 ];
 
 // Preprocess food data
-const food_map: Map<string, () => [string, number, number, boolean][]> =
-  new Map();
+const food_map: Map<string, () => [string, number, number, boolean][]> = new Map();
 // eslint-disable-next-line prefer-const
 for (let [names, fn] of food_data) {
   if (fn instanceof Array) {
@@ -609,10 +574,7 @@ const init: PluginInit = (app) => {
         return;
       }
       if (!msgTxt) {
-        App.bot?.sendMessage(
-          msg.chat.id,
-          `要给${App.config?.bot_name}吃什么呢？`,
-        );
+        App.bot?.sendMessage(msg.chat.id, `要给${App.config?.bot_name}吃什么呢？`);
       } else {
         const replies = generate_feed_food(msgTxt);
         for (const [reply, delay, love] of replies) {
@@ -620,12 +582,9 @@ const init: PluginInit = (app) => {
             () =>
               App.bot?.sendMessage(
                 msg.chat.id,
-                reply.replaceAll(
-                  '<!change>',
-                  `好感度${love > 0 ? '+' : ''}${love}`,
-                ),
+                reply.replaceAll('<!change>', `好感度${love > 0 ? '+' : ''}${love}`)
               ),
-            delay,
+            delay
           );
         }
       }

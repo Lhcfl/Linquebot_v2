@@ -91,7 +91,7 @@ class functionQueue {
 export async function writeFileSafe(
   file: fs.PathOrFileDescriptor,
   data: string | NodeJS.ArrayBufferView,
-  options?: fs.WriteFileOptions,
+  options?: fs.WriteFileOptions
 ) {
   fileLocks.find(String(file)).push(() => {
     fs.writeFileSync(file, data, options);

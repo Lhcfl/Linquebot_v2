@@ -61,7 +61,7 @@ const rong = (app: App, msg: Message, msgTxt?: string, rev?: boolean) => {
         {
           parse_mode: 'HTML',
           reply_to_message_id: msg.message_id,
-        },
+        }
       );
     }
   }
