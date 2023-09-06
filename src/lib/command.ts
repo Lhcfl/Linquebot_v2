@@ -15,11 +15,7 @@ const replyHandles: ReplyHandleConfig[] = [];
  */
 let on_off_mode: (app: App, msg: Message) => boolean = () => true;
 
-export type commandHandleFunction = (
-  app: App,
-  message: Message,
-  message_text?: string,
-) => void;
+export type commandHandleFunction = (app: App, message: Message, message_text?: string) => void;
 export type handleFunction = (app: App, message: Message) => void;
 
 export interface _HandleConfigBase_ {
@@ -40,7 +36,6 @@ export interface _HandleConfigBase_ {
    */
   description?: BotCommand['description'];
 }
-
 
 export interface CommandHandleConfig extends _HandleConfigBase_ {
   handle: commandHandleFunction;
@@ -126,11 +121,7 @@ export interface canUseCommandResult {
  * @param cmd 命令名（string）
  * @returns 是否允许运行
  */
-export function canUseCommand(
-  app: App,
-  message: Message,
-  cmd: string,
-): canUseCommandResult {
+export function canUseCommand(app: App, message: Message, cmd: string): canUseCommandResult {
   if (
     commands[cmd].premission === 'sysAdmin' &&
     !(message.from?.id && app.config.bot_sysadmin_id.includes(message.from?.id))
@@ -161,9 +152,7 @@ export function canUseCommand(
  */
 export function commandParser(app: App, message: Message) {
   if (message.text?.startsWith(app.config.command_style)) {
-    const matched = message.text
-      .substring(app.config.command_style.length)
-      .match(/[^\s@]+/);
+    const matched = message.text.substring(app.config.command_style.length).match(/[^\s@]+/);
     if (!matched) {
       return;
     }
@@ -194,7 +183,7 @@ export function commandParser(app: App, message: Message) {
  */
 export function getCommands(): {
   [key: string]: CommandHandleConfig;
-  } {
+} {
   return commands;
 }
 
@@ -218,9 +207,7 @@ export function getReplyHandles(): ReplyHandleConfig[] {
  * 注册bot on off mode管理器
  * @param func 一个函数，调用后返回当前bot处于打开还是关闭状态
  */
-export function botOnOffRegister(
-  func: (app: App, message: Message) => boolean,
-) {
+export function botOnOffRegister(func: (app: App, message: Message) => boolean) {
   on_off_mode = func;
 }
 

@@ -4,11 +4,7 @@ import { PluginInit } from '@/types/plugin.js';
 import { Message, User } from 'node-telegram-bot-api';
 
 function getName(user: User): string {
-  let username: string = user.first_name
-    ? user.first_name
-    : user.username
-      ? user.username
-      : '';
+  let username: string = user.first_name ? user.first_name : user.username ? user.username : '';
   if (user.last_name) {
     username += ' ' + user.last_name;
   }
@@ -37,7 +33,7 @@ const setTodo: commandHandleFunction = (app: App, msg: Message, msgTxt) => {
       `需要至少两个参数哦，第一个参数是分钟，第二个参数是${app.config.bot_name}要提醒干什么事`,
       {
         reply_to_message_id: msg.message_id,
-      },
+      }
     );
     return;
   }
@@ -50,7 +46,7 @@ const setTodo: commandHandleFunction = (app: App, msg: Message, msgTxt) => {
         `需要至少两个参数哦，你还没告诉${app.config.bot_name}要多久之后提醒哦`,
         {
           reply_to_message_id: msg.message_id,
-        },
+        }
       );
       return;
     } else {
@@ -59,7 +55,7 @@ const setTodo: commandHandleFunction = (app: App, msg: Message, msgTxt) => {
         `需要至少两个参数哦，你还没有告诉琳酱${app.config.bot_name}要提醒干什么哦`,
         {
           reply_to_message_id: msg.message_id,
-        },
+        }
       );
       return;
     }
@@ -72,7 +68,7 @@ const setTodo: commandHandleFunction = (app: App, msg: Message, msgTxt) => {
         `你给${app.config.bot_name}的时间不对，不要调戏${app.config.bot_name}呀`,
         {
           reply_to_message_id: msg.message_id,
-        },
+        }
       );
       return;
     }
@@ -83,7 +79,7 @@ const setTodo: commandHandleFunction = (app: App, msg: Message, msgTxt) => {
       {
         parse_mode: 'HTML',
         reply_to_message_id: msg.message_id,
-      },
+      }
     );
     setTimeout(
       () => {
@@ -91,7 +87,7 @@ const setTodo: commandHandleFunction = (app: App, msg: Message, msgTxt) => {
           reply_to_message_id: msg.message_id,
         });
       },
-      time * 60 * 1000,
+      time * 60 * 1000
     );
   }
 };

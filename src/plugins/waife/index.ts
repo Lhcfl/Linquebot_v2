@@ -6,11 +6,7 @@ import fs from 'fs';
 import { spawn } from 'child_process';
 
 function getName(user: User): string {
-  let username: string = user.first_name
-    ? user.first_name
-    : user.username
-      ? user.username
-      : '';
+  let username: string = user.first_name ? user.first_name : user.username ? user.username : '';
   if (user.last_name) {
     username += ' ' + user.last_name;
   }
@@ -108,13 +104,9 @@ async function getWaife(app: App, msg: Message) {
   }
   const lst = await getWaifesList(app, msg);
   if (lst.length <= 1) {
-    app.bot.sendMessage(
-      msg.chat.id,
-      '抱歉，我还没从群里获取到足够多的人哦，请先回复我一些消息',
-      {
-        reply_to_message_id: msg.message_id,
-      },
-    );
+    app.bot.sendMessage(msg.chat.id, '抱歉，我还没从群里获取到足够多的人哦，请先回复我一些消息', {
+      reply_to_message_id: msg.message_id,
+    });
     return;
   }
   let waife: User = lst[Math.floor(Math.random() * lst.length)];
@@ -124,25 +116,21 @@ async function getWaife(app: App, msg: Message) {
     cnt++;
   }
   if (waife.id === msg.from?.id) {
-    app.bot.sendMessage(
-      msg.chat.id,
-      '获取失败……理论上不会出现这个情况, 请查看bot代码',
-      {
-        reply_to_message_id: msg.message_id,
-      },
-    );
+    app.bot.sendMessage(msg.chat.id, '获取失败……理论上不会出现这个情况, 请查看bot代码', {
+      reply_to_message_id: msg.message_id,
+    });
     return;
   }
   add_to_wife(app, msg, msg.from.id);
   const res = await app.bot.sendMessage(
     msg.chat.id,
-    `${htmlify('获取成功~ 你今天的群友老婆是')} <a href="tg://user?id=${
-      waife.id
-    }">${htmlify(getName(waife))}</a>`,
+    `${htmlify('获取成功~ 你今天的群友老婆是')} <a href="tg://user?id=${waife.id}">${htmlify(
+      getName(waife)
+    )}</a>`,
     {
       parse_mode: 'HTML',
       reply_to_message_id: msg.message_id,
-    },
+    }
   );
   app.db.chat(msg.chat.id).waifemap[msg.from?.id] = {
     msg_id: res.message_id,
@@ -154,13 +142,13 @@ async function getWaife(app: App, msg: Message) {
 async function renderGraph(id: string, src: string): Promise<Buffer> {
   const [fname, outname] = [`${tmpdir()}/${id}.gv`, `${tmpdir()}/${id}.png`];
   await new Promise((res, rej) =>
-    fs.writeFile(fname, src, {encoding: 'utf-8'}, (err) => {
+    fs.writeFile(fname, src, { encoding: 'utf-8' }, (err) => {
       if (err) {
         rej(err);
       } else {
         res({});
       }
-    }),
+    })
   );
   await new Promise((res, rej) => {
     const proc = spawn('dot', [fname, '-Tpng', '-o', outname]);
@@ -179,7 +167,7 @@ async function renderGraph(id: string, src: string): Promise<Buffer> {
       } else {
         res(data);
       }
-    }),
+    })
   );
 }
 
@@ -197,7 +185,7 @@ async function getWaifeGraph(app: App, msg: Message) {
   }
   const iduser = app.db.chat(msg.chat.id).iduserMap;
   const getNode = (user: User) => `${user.id}[label="${getName(user)}"]`;
-  const uidMap: {[key: string]: boolean} = {};
+  const uidMap: { [key: string]: boolean } = {};
   const txt = [];
   for (const id in wfMap) {
     if (wfMap[id]?.waife) {
@@ -213,10 +201,7 @@ async function getWaifeGraph(app: App, msg: Message) {
     }
   }
   const src =
-    'digraph G {\n' +
-    'node[shape=box fontname="wqy-microhei"];\n' +
-    txt.join('\n') +
-    '\n}';
+    'digraph G {\n' + 'node[shape=box fontname="wqy-microhei"];\n' + txt.join('\n') + '\n}';
   console.log(src);
   const qidao = await app.bot.sendMessage(msg.chat.id, '少女祈祷中', {
     reply_to_message_id: msg.message_id,
