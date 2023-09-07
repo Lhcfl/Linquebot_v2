@@ -10,3 +10,4 @@ flake.lock
 dist
 docs/
 coverage
+.tsbuildinfo
