@@ -18,6 +18,10 @@ export interface DBStorage {
   write(name: string, data: { [key: string | number]: unknown }): Promise<void>;
 }
 
+type DeepReadonly<T> = T extends object
+  ? { readonly [k in keyof T]: DeepReadonly<T[k]> }
+  : Readonly<T>;
+
 function fnameescape(name: string) {
   return name.replaceAll(/[\/*?:|"\\<>]/g, (c) => `%-${'/*?:|"\\<>'.indexOf(c) + 1}`);
 }
@@ -36,6 +40,7 @@ export interface DBInitializer {
 
 type DBCache = {
   data?: { [key: string | number]: unknown };
+  occupied: Set<string | number>;
   sub?: { [key: string | number]: DBCache };
 };
 type DBRegistry = {
@@ -46,8 +51,9 @@ type DBRegistry = {
 /**
  * Manager and entry to the databases.
  *
- * You should **NOT** construct any of its instances, except for unit tests:
- * there's a app-local singleton [`app.db`]().
+ * Accessing the same entry concurrently may result in losing data, or conflict between two transactions;
+ * here, we choose to copy the entry lazily per database, which is not right, but lock-free,
+ * and wouldn't cause any transactions to fail
  *
  * Usage:
  *
@@ -55,12 +61,15 @@ type DBRegistry = {
  * // register the database
  * db.register('groups', { data: () => { id: number, users: User[] }, sub: { data: () => string } });
  * // use the databases
- * using grpdb = await app.db.db<{ id: number, users: User[] }>('groups');
+ * await using grpdb = await app.db.db<{ id: number, users: User[] }>('groups');
  * const grp = grpdb.data[msg.group.id];
  * grp.id;
- * using usrdb = await grpdb.sub<string>(msg.group.id);
+ * await using usrdb = await grpdb.sub<string>(msg.group.id);
  * const usr = usrdb.data[msg.user.id];
  * ```
+ *
+ * You should **NOT** construct any of its instances, except for unit tests:
+ * there's a app-local singleton [`app.db`]().
  */
 export class DBManager {
   private registry: {
@@ -77,7 +86,9 @@ export class DBManager {
     const tr = (fname: string) => `../data/${fname}/data.json`;
     this.storage = storage ?? {
       async read(fname) {
-        return JSON.parse((await fs.read(tr(fname))).toString('utf8'));
+        const ctnt = (await fs.read(tr(fname))).toString('utf8');
+        if (ctnt.trim() === '') return {};
+        else return JSON.parse(ctnt);
       },
       async write(fname, data) {
         await fs.write(tr(fname), JSON.stringify(data));
@@ -98,7 +109,7 @@ export class DBManager {
    */
   register(name: string, init: DBInitializer | (() => unknown)[]) {
     if (name in this.registry) return;
-    this.registry[name] = { init: [], cache: {} };
+    this.registry[name] = { init: [], cache: { occupied: new Set() } };
     if (init instanceof Array) this.registry[name].init = init;
     else {
       let it: DBInitializer | undefined = init;
@@ -109,7 +120,12 @@ export class DBManager {
     }
   }
 
-  // Yes, yes, there's nothing that can silently act as a
+  /**
+   * Get the database of the name.
+   *
+   * For detailed document, see [`DBManager`]().
+   */
+  // Yes, yes, there's nothing that can silently act as any object
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async db<T = any>(name: string): Promise<DB<T>> {
     if (!(name in this.registry)) throw new Error(`Unregistered database: ${name}`);
@@ -130,16 +146,30 @@ export class DBManager {
  * and lacking proper lifetime management leads to impossibility of actually using DB as a value;
  * however the dumbness of JS design requires everything above, and refuses to simplify the world with type systems.
  */
-class DB<T> implements Disposable {
+class DB<T> implements AsyncDisposable {
   private depth: number;
   private init: (() => T)[];
   private cache: DBCache;
   private storage: DBStorage;
   private base: string;
-  private modified;
   private ctnt;
 
-  data;
+  /**
+   * Entries in the database that can be read or written.
+   *
+   * Would raise warnings when concurrent read is detected, this is to prevent any possible pitfalls and bugs.
+   * If you don't need to write into the database, use [`peek`]().
+   */
+  data: { [k: string | number]: T };
+
+  /**
+   * Readonly entries in the database.
+   *
+   * Can be safely accessed across transactions.
+   *
+   * If writing is needed, use [`data`]().
+   */
+  peek: DeepReadonly<{ [k: string | number]: T }>;
 
   constructor(
     depth: number,
@@ -153,35 +183,51 @@ class DB<T> implements Disposable {
     this.base = base;
     this.cache = cache;
     this.storage = storage;
-    this.modified = new Set();
-    const modified = this.modified;
     const curinit = init[depth] as () => T;
-    if (cache.data === undefined) cache.data = {};
-    const cached = cache.data as { [k: string | number]: T };
+    const cached = cache.data! as { [k: string | number]: T };
     this.ctnt = {};
-    this.data = new Proxy<{ [k: string | number]: T }>(this.ctnt, {
+    this.data = new Proxy<typeof this.data>(this.ctnt, {
       get(data, name: string) {
-        modified.add(name);
-        if (!(name in data)) data[name] = name in cached ? cached[name] : curinit();
+        if (!(name in data)) {
+          if (cache.occupied.has(name)) {
+            console.warn(
+              `Database element ${name} in path ${base} is read while another transaction is using:` +
+                'this may be errorneous and would result in data loss.'
+            );
+            console.trace();
+          }
+          cache.occupied.add(name);
+          data[name] = name in cached ? cached[name] : curinit();
+        }
         return data[name];
+      },
+    });
+    this.peek = new Proxy<typeof this.peek>(this.ctnt, {
+      get(data, name: string) {
+        return name in data ? data[name] : cached[name] ?? curinit();
       },
     });
   }
 
-  [Symbol.dispose](): void {
+  async [Symbol.asyncDispose](): Promise<void> {
     const data = this.cache.data!;
+    // Yes, this may suppress further warnings, but one warning with one bug is severe enough and ought to be fixed.
+    Object.keys(this.ctnt).forEach((k) => this.cache.occupied.delete(k));
     Object.assign(data, this.ctnt);
-    this.storage.write(this.base, data);
+    await this.storage.write(this.base, data);
   }
 
   /**
    * Get the subdatabase in the database associated with the key.
+   *
+   * For detailed document, see [`DBManager`]().
    */
   async sub<U>(key: string | number): Promise<DB<U>> {
     if (this.cache.sub === undefined) this.cache.sub = {};
     const sub = this.cache.sub;
     const fname = path.join(this.base, fnameescape(key.toString()));
-    if (sub[key] === undefined) sub[key] = { data: await this.storage.read(fname) };
-    return new DB(this.depth + 1, this.init, sub, this.storage, fname);
+    if (sub[key] === undefined)
+      sub[key] = { data: await this.storage.read(fname), occupied: new Set() };
+    return new DB(this.depth + 1, this.init, sub[key], this.storage, fname);
   }
 }

@@ -19,6 +19,7 @@ async function readable(fname: string): Promise<boolean> {
 
 class FileLock implements AsyncDisposable {
   static async get(fname: string): Promise<FileLock> {
+    if (!(fname in lock)) lock[fname] = { locked: false, wakerq: [] };
     if (lock[fname].locked) await new Promise<void>((res) => lock[fname].wakerq.push(res));
     else lock[fname].locked = true;
     return new FileLock(fname);
