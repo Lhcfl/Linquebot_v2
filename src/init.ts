@@ -19,14 +19,14 @@ await app.init();
 const superManager = new SuperManager(app);
 superManager.init();
 
-app.bot.on('message', (msg) => {
+app.bot.on('message', async (msg) => {
   if (Number(new Date()) / 1000 - msg.date > app.config.outdate_seconds) {
     console.log('古老消息被忽略。详见 config.outdate_seconds');
     return;
   }
   console.log(msg);
-  commandParser(app, msg);
-  if (botOnOff(app, msg)) {
+  await commandParser(app, msg);
+  if (await botOnOff(app, msg)) {
     for (const cfg of getGlobalMessageHandles()) {
       cfg.handle(app, msg);
     }

@@ -13,10 +13,10 @@ const replyHandles: ReplyHandleConfig[] = [];
 /**
  * 计算bot on和off的状态
  */
-let on_off_mode: (app: App, msg: Message) => boolean = () => true;
+let on_off_mode: (app: App, msg: Message) => Promise<boolean> | boolean = () => true;
 
-export type commandHandleFunction = (app: App, message: Message, message_text?: string) => void;
-export type handleFunction = (app: App, message: Message) => void;
+export type commandHandleFunction = (app: App, message: Message, message_text?: string) => Promise<void> | void;
+export type handleFunction = (app: App, message: Message) => Promise<void> | void;
 
 export interface _HandleConfigBase_ {
   /**
@@ -150,7 +150,7 @@ export function canUseCommand(app: App, message: Message, cmd: string): canUseCo
 /**
  * Parse command and execute
  */
-export function commandParser(app: App, message: Message) {
+export async function commandParser(app: App, message: Message) {
   if (message.text?.startsWith(app.config.command_style)) {
     const matched = message.text.substring(app.config.command_style.length).match(/[^\s@]+/);
     if (!matched) {
@@ -164,13 +164,13 @@ export function commandParser(app: App, message: Message) {
     } else {
       message_text = '';
     }
-    if (botOnOff(app, message) === true || commands[cmd].off_mode === true) {
+    if ((await botOnOff(app, message)) === true || commands[cmd].off_mode === true) {
       const canUse = canUseCommand(app, message, cmd);
       if (canUse.success) {
-        commands[cmd].handle?.call(undefined, app, message, message_text);
+        await commands[cmd].handle?.call(undefined, app, message, message_text);
       } else {
         if (canUse.error_message === 'permission denied') {
-          app.bot.sendMessage(message.chat.id, '您的权限不足');
+          await app.bot.sendMessage(message.chat.id, '您的权限不足');
         }
       }
     }
@@ -207,7 +207,7 @@ export function getReplyHandles(): ReplyHandleConfig[] {
  * 注册bot on off mode管理器
  * @param func 一个函数，调用后返回当前bot处于打开还是关闭状态
  */
-export function botOnOffRegister(func: (app: App, message: Message) => boolean) {
+export function botOnOffRegister(func: typeof on_off_mode) {
   on_off_mode = func;
 }
 
@@ -217,6 +217,6 @@ export function botOnOffRegister(func: (app: App, message: Message) => boolean) 
  * @param msg 调用者传递的消息
  * @returns bot是否处于打开状态
  */
-export function botOnOff(app: App, msg: Message): boolean {
-  return on_off_mode(app, msg);
+export async function botOnOff(app: App, msg: Message): Promise<boolean> {
+  return await on_off_mode(app, msg);
 }
