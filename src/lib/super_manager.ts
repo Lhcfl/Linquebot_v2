@@ -4,7 +4,7 @@ import process from './process.js';
 
 export class SuperManager {
   reboot: commandHandleFunction = (app, msg) => {
-    app.bot.sendMessage(msg.chat.id, '重启中');
+    void app.bot.sendMessage(msg.chat.id, '重启中');
     setTimeout(() => {
       process.exit({
         exit_code: 0,

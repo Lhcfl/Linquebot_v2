@@ -574,13 +574,13 @@ const init: PluginInit = (app) => {
         return;
       }
       if (!msgTxt) {
-        App.bot?.sendMessage(msg.chat.id, `要给${App.config?.bot_name}吃什么呢？`);
+        void App.bot?.sendMessage(msg.chat.id, `要给${App.config?.bot_name}吃什么呢？`);
       } else {
         const replies = generate_feed_food(msgTxt);
         for (const [reply, delay, love] of replies) {
           setTimeout(
             () =>
-              App.bot?.sendMessage(
+              void App.bot?.sendMessage(
                 msg.chat.id,
                 reply.replaceAll('<!change>', `好感度${love > 0 ? '+' : ''}${love}`)
               ),

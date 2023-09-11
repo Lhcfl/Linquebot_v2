@@ -67,16 +67,20 @@ async function getWaife(app: App, msg: Message) {
     chat.lastwaifedate = new Date().toDateString();
   }
   if (chat.waifemap[msg.from?.id]) {
-    app.bot.sendMessage(msg.chat.id, '你今天已经抽过老婆了哦！', {
+    void app.bot.sendMessage(msg.chat.id, '你今天已经抽过老婆了哦！', {
       reply_to_message_id: msg.message_id,
     });
     return;
   }
   const lst = await getWaifesList(app, chat, msg);
   if (lst.length <= 1) {
-    app.bot.sendMessage(msg.chat.id, '抱歉，我还没从群里获取到足够多的人哦，请先回复我一些消息', {
-      reply_to_message_id: msg.message_id,
-    });
+    void app.bot.sendMessage(
+      msg.chat.id,
+      '抱歉，我还没从群里获取到足够多的人哦，请先回复我一些消息',
+      {
+        reply_to_message_id: msg.message_id,
+      }
+    );
     return;
   }
   let waife: User = lst[Math.floor(Math.random() * lst.length)];
@@ -86,12 +90,11 @@ async function getWaife(app: App, msg: Message) {
     cnt++;
   }
   if (waife.id === msg.from?.id) {
-    app.bot.sendMessage(msg.chat.id, '获取失败……理论上不会出现这个情况, 请查看bot代码', {
+    void app.bot.sendMessage(msg.chat.id, '获取失败……理论上不会出现这个情况, 请查看bot代码', {
       reply_to_message_id: msg.message_id,
     });
     return;
   }
-  add_to_wife(app, chat, msg, msg.from.id);
   const res = await app.bot.sendMessage(
     msg.chat.id,
     `${htmlify('获取成功~ 你今天的群友老婆是')} <a href="tg://user?id=${waife.id}">${htmlify(
@@ -103,6 +106,7 @@ async function getWaife(app: App, msg: Message) {
     }
   );
   chat.waifemap[msg.from?.id] = { date: res.date, waife };
+  await add_to_wife(app, chat, msg, msg.from.id);
 }
 
 async function renderGraph(id: string, src: string): Promise<Buffer> {
@@ -119,11 +123,11 @@ async function getWaifeGraph(app: App, msg: Message) {
   if (!msg.from?.id) {
     return;
   }
-  await using waifedb = await app.db.db<Data>('waife');
-  const chat = waifedb.data[msg.chat.id];
+  const waifedb = await app.db.db<Data>('waife');
+  const chat = waifedb.peek[msg.chat.id];
   const wfMap = chat.waifemap;
   if (Object.keys(wfMap).length <= 0) {
-    app.bot.sendMessage(msg.chat.id, '群里还没人有老婆哦！', {
+    void app.bot.sendMessage(msg.chat.id, '群里还没人有老婆哦！', {
       reply_to_message_id: msg.message_id,
     });
     return;
@@ -147,20 +151,20 @@ async function getWaifeGraph(app: App, msg: Message) {
   }
   const src = 'digraph G {\n' + 'node[shape=box];\n' + txt.join('\n') + '\n}';
   console.log(src);
-  const qidao = await app.bot.sendMessage(msg.chat.id, '少女祈祷中', {
+  const qidao = app.bot.sendMessage(msg.chat.id, '少女祈祷中', {
     reply_to_message_id: msg.message_id,
   });
   try {
     const rendered = await renderGraph('waife', src);
-    app.bot.deleteMessage(msg.chat.id, qidao.message_id);
-    app.bot.sendPhoto(msg.chat.id, rendered, {
+    void app.bot.sendPhoto(msg.chat.id, rendered, {
       reply_to_message_id: msg.message_id,
     });
+    void app.bot.deleteMessage(msg.chat.id, (await qidao).message_id);
   } catch (err) {
-    app.bot.deleteMessage(msg.chat.id, qidao.message_id);
-    app.bot.sendMessage(msg.chat.id, `诶呀，生成图片中出现了错误…… ${JSON.stringify(err)}`, {
+    void app.bot.sendMessage(msg.chat.id, `诶呀，生成图片中出现了错误…… ${JSON.stringify(err)}`, {
       reply_to_message_id: msg.message_id,
     });
+    void app.bot.deleteMessage(msg.chat.id, (await qidao).message_id);
   }
 }
 
@@ -182,7 +186,7 @@ const init: PluginInit = (app) => {
     chat_type: ['group', 'supergroup'],
     handle: async (appl, msg) => {
       await using db = await app.db.db<Data>('waife');
-      add_to_wife(appl, db.data[msg.chat.id], msg, msg.from?.id);
+      await add_to_wife(appl, db.data[msg.chat.id], msg, msg.from?.id);
     },
     description: '添加老婆！',
   });

@@ -94,7 +94,7 @@ const startJielong: commandHandleFunction = async (app, msg, starter) => {
   await using db = await app.db.db<jielongStatus>('chengyu');
   const data = db.data[msg.chat.id];
   if (data.started) {
-    app.bot?.sendMessage(
+    void app.bot?.sendMessage(
       msg.chat.id,
       `现在正在游戏哦，上一个成语是 ${data.stcy}，请接：${data.st}\n场上情况：${getJielongInfo(
         data
@@ -103,7 +103,7 @@ const startJielong: commandHandleFunction = async (app, msg, starter) => {
   } else {
     if (starter?.length && starter?.length >= 3) {
       if (cy[starter] === undefined) {
-        app.bot?.sendMessage(msg.chat.id, `这个成语是什么，${app.config?.bot_name}不知道哦OoO`);
+        void app.bot?.sendMessage(msg.chat.id, `这个成语是什么，${app.config?.bot_name}不知道哦OoO`);
         return;
       }
       Object.assign(data, {
@@ -116,7 +116,7 @@ const startJielong: commandHandleFunction = async (app, msg, starter) => {
         userStatus: {}, // 用户得分信息
         startAt: Number(new Date()), // 开始时间
       });
-      app.bot?.sendMessage(msg.chat.id, `游戏开始！请接 ${data.st}`);
+      void app.bot?.sendMessage(msg.chat.id, `游戏开始！请接 ${data.st}`);
     } else {
       Object.assign(data, {
         started: true,
@@ -127,7 +127,7 @@ const startJielong: commandHandleFunction = async (app, msg, starter) => {
         startAt: Number(new Date()), // 开始时间
       });
       setRandomChenyu(data);
-      app.bot?.sendMessage(
+      void app.bot?.sendMessage(
         msg.chat.id,
         `游戏开始，${app.config?.bot_name}来给出第一个成语吧：${data.stcy}，请接 ${data.st}`
       );
@@ -139,7 +139,7 @@ const stopJielong: commandHandleFunction = async (app, msg) => {
   await using db = await app.db.db<jielongStatus>('chengyu');
   const data = db.data[msg.chat.id];
   if (data.started) {
-    app.bot?.sendMessage(
+    void app.bot?.sendMessage(
       msg.chat.id,
       `接龙被 @${msg.from?.username} 结束!\n最终情况：${getJielongInfo(data)}`
     );
@@ -151,7 +151,7 @@ const stopJielong: commandHandleFunction = async (app, msg) => {
       console.error(err);
     }
   } else {
-    app.bot?.sendMessage(msg.chat.id, '接龙还未开始哦');
+    void app.bot?.sendMessage(msg.chat.id, '接龙还未开始哦');
   }
 };
 
@@ -163,15 +163,15 @@ const newMessageHandle: handleFunction = async (app, msg) => {
       const res: string = `成语接龙结束啦！${app.config?.bot_name}来宣布结果：${getJielongInfo(
         data
       )}`;
-      app.bot?.sendMessage(msg.chat.id, res);
-      app.db.with_path(['chengyu', msg.chat.id], () => {});
+      void app.bot?.sendMessage(msg.chat.id, res);
+      void app.db.with_path(['chengyu', msg.chat.id], () => {});
       return;
     }
     if (data.st !== cy[msg.text].st) {
       return;
     }
     if (data.counted[msg.text]) {
-      app.bot?.sendMessage(msg.chat.id, '这个成语接过了哦');
+      void app.bot?.sendMessage(msg.chat.id, '这个成语接过了哦');
     } else {
       if (!msg.from?.id) {
         return;
@@ -215,12 +215,12 @@ const newMessageHandle: handleFunction = async (app, msg) => {
       data.userStatus = userStatus;
 
       if (data.combo <= 2) {
-        app.bot?.sendMessage(
+        void app.bot?.sendMessage(
           msg.chat.id,
           `接龙成功！${getName(msg?.from)} 分数+1。\n下一个开头：${data.st}`
         );
       } else {
-        app.bot?.sendMessage(
+        void app.bot?.sendMessage(
           msg.chat.id,
           `${getName(msg?.from)} ${data.combo} 连击！\n下一个开头：${data.st}`
         );

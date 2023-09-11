@@ -23,7 +23,7 @@ const init: PluginInit = (app) => {
           help_text += `\n${h.description}`;
         }
       }
-      App.bot?.sendMessage(message.chat.id, help_text);
+      void App.bot?.sendMessage(message.chat.id, help_text);
     },
     description: '显示帮助',
     off_mode: true,

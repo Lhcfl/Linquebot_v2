@@ -9,11 +9,11 @@ import { App } from '@/types/app.js';
 import { YamlConfig } from '@/types/config.js';
 import process from '@/lib/process.js';
 import TelegramBot from 'node-telegram-bot-api';
-import { CreateBot } from '@/types/bridge.js';
 import { reverseReadFileIfExists } from '@/util/fs.js';
 import chalk from 'chalk';
 import { writeFileSafe } from './file_lock.js';
 import { DBManager } from './db.js';
+import { Platform } from '@/util/types.js';
 
 /**
  * `@/types/app.ts` 的 App 实现
@@ -29,7 +29,7 @@ export class Application implements App {
   constructor() {
     const packageJSON = reverseReadFileIfExists('package.json');
     if (packageJSON) {
-      this._version = JSON.parse(packageJSON).version;
+      this._version = (JSON.parse(packageJSON) as { version: string }).version;
     } else {
       throw 'no version found';
     }
@@ -60,8 +60,9 @@ export class Application implements App {
     }
     console.log(`Launching bot at Platform[${this.config.platform.enabled}]...`);
 
-    const createBot = (await import(`../bridges/${this.config.platform.enabled}/index.js`))
-      .createBot as CreateBot;
+    const createBot = (
+      (await import(`../bridges/${this.config.platform.enabled}/index.js`)) as Platform
+    ).createBot;
 
     try {
       this._bot = createBot(this.config.platform.settings[this.config.platform.enabled]);
