@@ -1,23 +1,22 @@
-import { Message } from 'node-telegram-bot-api';
 import { commandHandleFunction, handleFunction } from '../../lib/command.js';
-import db from '../../lib/db.js';
 import { PluginInit } from '../../types/plugin.js';
 import { cy as _cy, cylist as _cylist, py as _py } from './lib_loader.js';
+import { getName } from '@/util/string.js';
 
 const cy: { [key: string]: { st?: string; ed?: string } } = _cy; // 成语词典
 const cylist: { [key: string]: string[] } = _cylist; // 首拼音对应的成语
 const py: string[] = _py; // 所有可能的成语开局
 
 type userIdType = string | number;
-interface jielongStatus {
+class jielongStatus {
   /** 是否已开始接龙 */
-  started?: boolean;
+  started: boolean = false;
   /** 下一个接龙开头拼音 */
   st?: string;
   /** 上一个被接龙的成语 */
   stcy?: string;
   /** 已经接龙的词语Map 真值说明已经接过。 */
-  counted?: { [key: string]: number | boolean };
+  counted: { [key: string]: number | boolean } = {};
   /** 上一个接龙的userid */
   lastJielonger?: userIdType;
   /** 目前连击数 */
@@ -35,28 +34,9 @@ interface jielongStatus {
   startAt?: number;
 }
 
-function getJielongStatus(msg: Message): jielongStatus {
-  if (!db.chat(msg.chat.id).jielong_status) {
-    db.chat(msg.chat.id).jielong_status = {};
-  }
-  return db.chat(msg.chat.id).jielong_status;
-}
-getJielongStatus.counted = (msg: Message) => {
-  const counted = getJielongStatus(msg).counted;
-  if (counted) {
-    return counted;
-  } else {
-    getJielongStatus(msg).counted = {};
-    return {};
-  }
-};
-function clearJielongStatus(msg: Message): void {
-  db.chat(msg.chat.id).jielong_status = {};
-}
-
-function gameEnded(msg: Message): boolean {
-  if (getJielongStatus(msg)?.started) {
-    const startAt = getJielongStatus(msg).startAt;
+function gameEnded(data: jielongStatus): boolean {
+  if (data.started) {
+    const startAt = data.startAt;
     if (typeof startAt !== 'number') {
       return true;
     } else {
@@ -67,34 +47,19 @@ function gameEnded(msg: Message): boolean {
   }
 }
 // 从starter获取随机成语开局
-function setRandomChenyu(msg: Message, starter?: string): string {
+function setRandomChenyu(data: jielongStatus, starter?: string): string {
   console.log(starter);
   if (starter === '' || starter === undefined || cylist[starter] === undefined) {
-    return setRandomChenyu(msg, py[Math.floor(Math.random() * py.length)]);
+    return setRandomChenyu(data, py[Math.floor(Math.random() * py.length)]);
   } else {
     const find: string = cylist[starter][Math.floor(Math.random() * cylist[starter].length)];
-    if (!getJielongStatus(msg)) {
-      clearJielongStatus(msg);
-    }
-    getJielongStatus.counted(msg)[find] = true;
-    getJielongStatus(msg).st = cy[find].ed;
-    getJielongStatus(msg).stcy = find;
-
+    data.counted[find] = true;
+    data.st = cy[find].ed;
+    data.stcy = find;
     return find;
   }
 }
-function getName(message: Message): string {
-  let username: string = message.from?.first_name
-    ? message.from?.first_name
-    : message.from?.username
-      ? message.from?.username
-      : '';
-  if (message.from?.last_name) {
-    username += ' ' + message.from?.last_name;
-  }
-  return username;
-}
-function getJielongInfo(msg: Message): string {
+function getJielongInfo(data: jielongStatus): string {
   function numToChinese(n: number): string | number {
     if (n <= 10) {
       return '零一二三四五六七八九十'[n];
@@ -102,9 +67,9 @@ function getJielongInfo(msg: Message): string {
       return n;
     }
   }
-  if (getJielongStatus(msg)?.started) {
+  if (data.started) {
     let res: string = '';
-    const userStatus = getJielongStatus(msg).userStatus;
+    const userStatus = data.userStatus;
     if (!userStatus) {
       return '无数据！';
     }
@@ -125,13 +90,15 @@ function getJielongInfo(msg: Message): string {
   }
 }
 
-const startJielong: commandHandleFunction = (app, msg, starter) => {
-  if (getJielongStatus(msg)?.started) {
+const startJielong: commandHandleFunction = async (app, msg, starter) => {
+  await using db = await app.newdb.db<jielongStatus>('chengyu');
+  const data = db.data[msg.chat.id];
+  if (data.started) {
     app.bot?.sendMessage(
       msg.chat.id,
-      `现在正在游戏哦，上一个成语是 ${getJielongStatus(msg).stcy}，请接：${
-        getJielongStatus(msg).st
-      }\n场上情况：${getJielongInfo(msg)}`
+      `现在正在游戏哦，上一个成语是 ${data.stcy}，请接：${data.st}\n场上情况：${getJielongInfo(
+        data
+      )}`
     );
   } else {
     if (starter?.length && starter?.length >= 3) {
@@ -139,7 +106,7 @@ const startJielong: commandHandleFunction = (app, msg, starter) => {
         app.bot?.sendMessage(msg.chat.id, `这个成语是什么，${app.config?.bot_name}不知道哦OoO`);
         return;
       }
-      db.chat(msg.chat.id).jielong_status = {
+      Object.assign(data, {
         started: true,
         st: cy[starter].ed,
         stcy: starter,
@@ -148,37 +115,38 @@ const startJielong: commandHandleFunction = (app, msg, starter) => {
         combo: 0, // 连击数
         userStatus: {}, // 用户得分信息
         startAt: Number(new Date()), // 开始时间
-      };
-      app.bot?.sendMessage(msg.chat.id, `游戏开始！请接 ${getJielongStatus(msg)?.st}`);
+      });
+      app.bot?.sendMessage(msg.chat.id, `游戏开始！请接 ${data.st}`);
     } else {
-      db.chat(msg.chat.id).jielong_status = {
+      Object.assign(data, {
         started: true,
         counted: {},
         lastJielonger: msg.from?.id,
         combo: 0, // 连击数
         userStatus: {}, // 用户得分信息
         startAt: Number(new Date()), // 开始时间
-      };
-      setRandomChenyu(msg);
+      });
+      setRandomChenyu(data);
       app.bot?.sendMessage(
         msg.chat.id,
-        `游戏开始，${app.config?.bot_name}来给出第一个成语吧：${getJielongStatus(msg)
-          ?.stcy}，请接 ${getJielongStatus(msg)?.st}`
+        `游戏开始，${app.config?.bot_name}来给出第一个成语吧：${data.stcy}，请接 ${data.st}`
       );
     }
   }
 };
 
-const stopJielong: commandHandleFunction = (app, msg) => {
-  if (getJielongStatus(msg)?.started) {
+const stopJielong: commandHandleFunction = async (app, msg) => {
+  await using db = await app.newdb.db<jielongStatus>('chengyu');
+  const data = db.data[msg.chat.id];
+  if (data.started) {
     app.bot?.sendMessage(
       msg.chat.id,
-      `接龙被 @${msg.from?.username} 结束!\n最终情况：${getJielongInfo(msg)}`
+      `接龙被 @${msg.from?.username} 结束!\n最终情况：${getJielongInfo(data)}`
     );
     try {
-      db.chat(msg.chat.id).jielong_status = {
+      Object.assign(data, {
         started: false,
-      };
+      });
     } catch (err) {
       console.error(err);
     }
@@ -187,32 +155,34 @@ const stopJielong: commandHandleFunction = (app, msg) => {
   }
 };
 
-const newMessageHandle: handleFunction = (app, msg) => {
-  if (getJielongStatus(msg)?.started && msg.text && cy[msg.text]) {
-    if (gameEnded(msg)) {
+const newMessageHandle: handleFunction = async (app, msg) => {
+  await using db = await app.newdb.db<jielongStatus>('chengyu');
+  const data = db.data[msg.chat.id];
+  if (data.started && msg.text && cy[msg.text]) {
+    if (gameEnded(data)) {
       const res: string = `成语接龙结束啦！${app.config?.bot_name}来宣布结果：${getJielongInfo(
-        msg
+        data
       )}`;
       app.bot?.sendMessage(msg.chat.id, res);
-      db.chat(msg.chat.id).jielong_status = {};
+      app.newdb.with_path(['chengyu', msg.chat.id], () => {});
       return;
     }
-    if (getJielongStatus(msg).st !== cy[msg.text].st) {
+    if (data.st !== cy[msg.text].st) {
       return;
     }
-    if (getJielongStatus.counted(msg)[msg.text]) {
+    if (data.counted[msg.text]) {
       app.bot?.sendMessage(msg.chat.id, '这个成语接过了哦');
     } else {
       if (!msg.from?.id) {
         return;
       }
       // 接龙成功
-      getJielongStatus.counted(msg)[msg.text] = true;
-      getJielongStatus(msg).st = cy[msg.text].ed;
-      getJielongStatus(msg).stcy = msg.text;
-      let userStatus = getJielongStatus(msg).userStatus;
+      data.counted[msg.text] = true;
+      data.st = cy[msg.text].ed;
+      data.stcy = msg.text;
+      let userStatus = data.userStatus;
       if (!userStatus) {
-        getJielongStatus(msg).userStatus = {};
+        data.userStatus = {};
         userStatus = {};
       }
       if (!userStatus[msg.from?.id]) {
@@ -225,36 +195,34 @@ const newMessageHandle: handleFunction = (app, msg) => {
       }
       userStatus[msg.from?.id].score = Number(userStatus[msg.from?.id].score) + 1;
       // 判断combo
-      if (!getJielongStatus(msg).combo) {
-        getJielongStatus(msg).combo = 0;
+      if (!data.combo) {
+        data.combo = 0;
       }
-      if (getJielongStatus(msg).lastJielonger === msg.from?.id) {
-        getJielongStatus(msg).combo = Number(getJielongStatus(msg).combo) + 1;
+      if (data.lastJielonger === msg.from?.id) {
+        data.combo = data.combo + 1;
       } else {
-        const lastJielonger = getJielongStatus(msg).lastJielonger;
+        const lastJielonger = data.lastJielonger;
         if (lastJielonger) {
           userStatus[lastJielonger].combo = Math.max(
-            Number(userStatus[lastJielonger].combo),
-            Number(getJielongStatus(msg).combo)
+            userStatus[lastJielonger].combo ?? 0,
+            data.combo
           );
         }
-        getJielongStatus(msg).combo = 1;
-        getJielongStatus(msg).lastJielonger = msg.from?.id;
+        data.combo = 1;
+        data.lastJielonger = msg.from?.id;
       }
 
-      getJielongStatus(msg).userStatus = userStatus;
+      data.userStatus = userStatus;
 
-      if (Number(getJielongStatus(msg).combo) <= 2) {
+      if (data.combo <= 2) {
         app.bot?.sendMessage(
           msg.chat.id,
-          `接龙成功！${getName(msg)} 分数+1。\n下一个开头：${getJielongStatus(msg).st}`
+          `接龙成功！${getName(msg?.from)} 分数+1。\n下一个开头：${data.st}`
         );
       } else {
         app.bot?.sendMessage(
           msg.chat.id,
-          `${getName(msg)} ${getJielongStatus(msg).combo} 连击！\n下一个开头：${
-            getJielongStatus(msg).st
-          }`
+          `${getName(msg?.from)} ${data.combo} 连击！\n下一个开头：${data.st}`
         );
       }
     }
@@ -263,6 +231,7 @@ const newMessageHandle: handleFunction = (app, msg) => {
 
 const init: PluginInit = (app) => {
   console.log('成语 loaded!');
+  app.newdb.register('chengyu', [() => new jielongStatus()]);
   app.registCommand({
     chat_type: 'all',
     command: 'start_jielong',

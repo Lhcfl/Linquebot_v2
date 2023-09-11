@@ -4,6 +4,7 @@ import { Message, User } from 'node-telegram-bot-api';
 import { tmpdir } from 'os';
 import fs from 'fs/promises';
 import { spawn } from 'child_process';
+import { getName } from '@/util/string.js';
 
 class Data {
   waifes: User[] = [];
@@ -11,14 +12,6 @@ class Data {
   lastwaifedate: string = '';
   waife_ids: { [k: number]: boolean } = {};
   iduserMap: { [uid: number]: User } = {};
-}
-
-function getName(user: User): string {
-  let username: string = user.first_name ? user.first_name : user.username ? user.username : '';
-  if (user.last_name) {
-    username += ' ' + user.last_name;
-  }
-  return username;
 }
 
 function htmlify(str: string | undefined): string {
