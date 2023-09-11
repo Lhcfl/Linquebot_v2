@@ -1,5 +1,6 @@
 import path from 'path';
 import fs from './lock_fs';
+import { DeepReadonly, MaybePromise } from '@/util/types';
 
 /**
  * Store data in the database.
@@ -13,14 +14,10 @@ import fs from './lock_fs';
  */
 export interface DBStorage {
   /** Read from the path @returns the data in the database of the path */
-  read(name: string): Promise<{ [key: string | number]: unknown }>;
+  read(name: string): MaybePromise<{ [key: string | number]: unknown }>;
   /** Write to the path */
-  write(name: string, data: { [key: string | number]: unknown }): Promise<void>;
+  write(name: string, data: { [key: string | number]: unknown }): MaybePromise<void>;
 }
-
-type DeepReadonly<T> = T extends object
-  ? { readonly [k in keyof T]: DeepReadonly<T[k]> }
-  : Readonly<T>;
 
 function fnameescape(name: string) {
   return name.replaceAll(/[\/*?:|"\\<>]/g, (c) => `%-${'/*?:|"\\<>'.indexOf(c) + 1}`);
@@ -51,9 +48,11 @@ type DBRegistry = {
 /**
  * Manager and entry to the databases.
  *
- * Accessing the same entry concurrently may result in losing data, or conflict between two transactions;
- * here, we choose to copy the entry lazily per database, which is not right, but lock-free,
- * and wouldn't cause any transactions to fail
+ * **Note**: if you want to write to a database, don't forget to `using` it,
+ * or data written to the database would lose!
+ *
+ * You should **NOT** construct any of its instances, except for unit tests:
+ * there's a app-local singleton [`app.db`]().
  *
  * Usage:
  *
@@ -68,8 +67,9 @@ type DBRegistry = {
  * const usr = usrdb.data[msg.user.id];
  * ```
  *
- * You should **NOT** construct any of its instances, except for unit tests:
- * there's a app-local singleton [`app.db`]().
+ * Accessing the same entry concurrently may result in losing data, or conflict between two transactions;
+ * here, we choose to copy the entry lazily per database, which is not right, but lock-free,
+ * and wouldn't cause any transactions to fail.
  */
 export class DBManager {
   private registry: {
@@ -88,7 +88,7 @@ export class DBManager {
       async read(fname) {
         const ctnt = (await fs.read(tr(fname))).toString('utf8');
         if (ctnt.trim() === '') return {};
-        else return JSON.parse(ctnt);
+        else return JSON.parse(ctnt) as { [k: string | number]: unknown };
       },
       async write(fname, data) {
         await fs.write(tr(fname), JSON.stringify(data));
@@ -133,6 +133,43 @@ export class DBManager {
     const fname = fnameescape(name);
     if (reg.cache.data === undefined) reg.cache.data = await this.storage.read(fname);
     return new DB(0, reg.init, reg.cache, this.storage, fname);
+  }
+
+  /**
+   * Conveniently perform a transaction with the given entry in given path.
+   * Equivalent to a chain of calls like:
+   *
+   * ``` typescript
+   * // convenient call
+   * await mgr.with_path<T>(['main', 'sub', ..., 'final sub', 'key'],
+   *   async (val) => { 'do sth' });
+   * // equivalent to:
+   * await using subdb = await mgr.db('main').sub('sub')....sub<T>('final sub');
+   * const val = subdb.data['key'];
+   * // do sth
+   * ```
+   *
+   * You may return a new value in the transaction to set the entry to the given value.
+   */
+  async with_path<T>(
+    base: (string | number)[],
+    transaction: (a: T) => Promise<void> | void
+  ): Promise<void>;
+  async with_path<T>(base: (string | number)[], transaction: (a: T) => Promise<T> | T): Promise<T>;
+  async with_path<T>(
+    base: (string | number)[],
+    transaction: (a: T) => Promise<void | T> | void | T
+  ): Promise<void | T> {
+    if (base.length <= 2) throw new Error('with_path should be called with a path longer than 2');
+    let db: DB<T> = { sub: (k) => this.db(k.toString()) } as DB<T>;
+    for (const name of base.slice(0, -2)) db = await db.sub(name);
+    await using subdb = await db.sub<T>(base[base.length - 2]);
+    const key = base[base.length - 1];
+    const data = await transaction(subdb.data[key]);
+    if (data) {
+      subdb.data[key] = data;
+    }
+    return data;
   }
 }
 

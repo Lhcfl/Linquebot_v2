@@ -17,7 +17,7 @@ async function readable(fname: string): Promise<boolean> {
   }
 }
 
-class FileLock implements AsyncDisposable {
+class FileLock implements Disposable {
   static async get(fname: string): Promise<FileLock> {
     if (!(fname in lock)) lock[fname] = { locked: false, wakerq: [] };
     if (lock[fname].locked) await new Promise<void>((res) => lock[fname].wakerq.push(res));
@@ -28,7 +28,7 @@ class FileLock implements AsyncDisposable {
   constructor(fname: string) {
     this.fname = fname;
   }
-  async [Symbol.asyncDispose](): Promise<void> {
+  [Symbol.dispose](): void {
     const waker = lock[this.fname].wakerq.shift();
     if (waker) waker();
     else lock[this.fname].locked = false;
@@ -47,7 +47,7 @@ class FileLock implements AsyncDisposable {
 export async function read(fname: string): Promise<Buffer> {
   // So why isn't there using expressions or using statement without variable name???
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  await using _ = await FileLock.get(fname);
+  using _ = await FileLock.get(fname);
   if (await readable(`${fname}-writing`)) {
     await fs.copyFile(`${fname}-backup`, fname);
     await fs.rm(`${fname}-writing`);
@@ -68,7 +68,7 @@ export async function read(fname: string): Promise<Buffer> {
 export async function write(fname: string, data: Buffer | string): Promise<void> {
   // So why isn't there using expressions or using statement without variable name???
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  await using _ = await FileLock.get(fname);
+  using _ = await FileLock.get(fname);
   await fs.mkdir(path.dirname(fname));
   await fs.copyFile(fname, `${fname}-backup`);
   await fs.writeFile(`${fname}-writing`, '');

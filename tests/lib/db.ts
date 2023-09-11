@@ -15,11 +15,11 @@ test('simple data', async () => {
   const ctnt: RegType = {};
   const mgr = new DBManager({
     async read(name: string) {
-      return name in ctnt ? ctnt[name][ctnt[name].length - 1] : {};
+      return Promise.resolve(name in ctnt ? ctnt[name][ctnt[name].length - 1] : {});
     },
-    async write(name: string, data: { [k: string | number]: unknown }) {
+    write(name: string, data: { [k: string | number]: unknown }) {
       if (!(name in ctnt)) ctnt[name] = [];
-      ctnt[name].push(data);
+      ctnt[name].push(structuredClone(data));
     },
   });
   await expect(mgr.db('a')).rejects.toThrow(new Error('Unregistered database: a'));
@@ -30,8 +30,9 @@ test('simple data', async () => {
   mgr.register(weird_name, { data: supinit, sub: { data: subinit } });
   // Expect array-form and initializer-form initializing to be the same
   mgr.register('array init test', [supinit, subinit]);
+  // (To access the fake-privated field x (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const reg = (mgr as any).registry;
+  const reg = (mgr as unknown as { registry: { [k: string | number]: unknown } }).registry;
   expect(reg[weird_name]).toEqual(reg['array init test']);
 
   {
@@ -57,25 +58,41 @@ test('simple data', async () => {
   {
     await using subb = await (await mgr.db('array init test')).sub<string>('b');
     expect(subb.data['a.a']).toBe('sub');
+    subb.data['a.a'] = 'subb entry';
   }
+
+  await expect(mgr.with_path(['array init test'], () => {})).rejects.toEqual(
+    new Error('with_path should be called with a path longer than 2')
+  );
+  expect(
+    await mgr.with_path<string>(['array init test', 'b', 'a.a'], (val) => {
+      expect(val).toBe('subb entry');
+      return 'with path';
+    })
+  ).toBe('with path');
+  expect(
+    await mgr.with_path<string>(['array init test', 'b', 'a.a'], (val) => {
+      expect(val).toBe('with path');
+    })
+  ).toBe(undefined);
 
   expect(ctnt).toEqual({
     '%-2%-3%-2%-3%-1%-1%-7%-7weird name': [
-      { qaq: { a: 0, b: 2 }, qwq: { a: 1, b: 1 }, unassigned: { a: 0, b: 1 } },
+      { qaq: { a: 0, b: 2 }, qwq: { a: 1, b: 1 } },
       { qaq: { a: 0, b: 2 }, qwq: { a: 1, b: 1 }, unassigned: { a: 0, b: 1 } },
     ],
     'array init test/a': [{ 'a.a': 'aa' }],
-    'array init test/b': [{ 'a.a': 'sub' }],
+    'array init test/b': [{ 'a.a': 'subb entry' }, { 'a.a': 'with path' }, { 'a.a': 'with path' }],
   });
   expect(console.warn).not.toBeCalled();
 });
 
 test('racing warning', async () => {
   console.warn = jest.fn();
-  console.trace = jest.fn();  // No, I don't want to see any stacktraces
+  console.trace = jest.fn(); // No, I don't want to see any stacktraces
   const mgr = new DBManager({
-    read: async () => ({}),
-    write: async () => {},
+    read: () => ({}),
+    write: () => {},
   });
   mgr.register('racing', [() => 'race']);
   {
@@ -116,11 +133,11 @@ jest.mock('fs/promises', () => {
         if (name === '../data/main/data.json') res();
         else rej();
       }),
-    async readFile(name: string) {
+    readFile(name: string) {
       return name === '../data/main/data.json' ? '{ "a": "ita" }' : '';
     },
     writeFile: jest.fn(),
-    async mkdir(name: string) {
+    mkdir(name: string) {
       expect(name).toMatch(/..\/data\/main(\/sub)?/);
     },
     copyFile: jest.fn(),
