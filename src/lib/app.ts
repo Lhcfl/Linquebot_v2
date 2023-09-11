@@ -14,6 +14,9 @@ import { CreateBot } from '@/types/bridge.js';
 import { reverseReadFileIfExists } from '@/util/fs.js';
 import chalk from 'chalk';
 import { writeFileSafe } from './file_lock.js';
+import { DBManager } from './newdb.js';
+
+const newdb = new DBManager();
 
 /**
  * `@/types/app.ts` 的 App 实现
@@ -93,6 +96,10 @@ export class Application implements App {
 
   get db() {
     return db;
+  }
+
+  get newdb() {
+    return newdb;
   }
 
   get std() {

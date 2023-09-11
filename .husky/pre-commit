@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 . "$(dirname -- "$0")/_/husky.sh"
 if which pnpm >/dev/null; then
     pack=pnpm
@@ -8,6 +8,4 @@ else
     pack=npm
 fi
 
-$pack run lint
-$pack run build
-
+$pack exec node "$(dirname -- "$0")/pre-commit.js"
