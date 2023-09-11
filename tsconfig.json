@@ -101,5 +101,8 @@
     // "skipDefaultLibCheck": true,                      /* 跳过 TypeScript 附带的类型检查 .d.ts 文件。 */
     "skipLibCheck": true /* 跳过对所有 .d.ts 文件的类型检查。 */
   },
+  "tsc-alias": {
+    "resolveFullPaths": true
+  },
   "include": ["./src"]
 }

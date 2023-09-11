@@ -172,7 +172,7 @@ async function getWaifeGraph(app: App, msg: Message) {
 }
 
 const init: PluginInit = (app) => {
-  app.newdb.register('waifes', { data: () => new Data() });
+  app.newdb.register('waife', { data: () => new Data() });
   app.registCommand({
     chat_type: ['group', 'supergroup'],
     command: 'waife',
