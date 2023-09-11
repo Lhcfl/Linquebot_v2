@@ -5,7 +5,7 @@ Object.defineProperty(Symbol, 'asyncDispose', {
   value: '@@asyncDispose',
 });
 
-import { DBManager } from '../../src/lib/newdb.ts';
+import { DBManager } from '../../src/lib/newdb.js';
 import fs from 'fs/promises';
 
 type RegType = { [k: string]: { [pk: string | number]: unknown }[] };

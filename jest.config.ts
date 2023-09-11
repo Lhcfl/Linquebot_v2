@@ -7,20 +7,15 @@ import type { JestConfigWithTsJest } from 'ts-jest';
 
 const config: JestConfigWithTsJest = {
   preset: 'ts-jest/presets/default-esm',
-  transform: {
-    '.*.[jt]s$': [
-      'ts-jest',
-      {
-        useESM: true,
-        tsconfig: {
-          target: 'es2021',
-          allowImportingTsExtensions: true,
-          module: 'nodeNext',
-          moduleResolution: 'nodeNext',
-        },
-      },
-    ],
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1',
   },
+  transform: {
+    '.*.[jt]s$': ['ts-jest', { useESM: true }],
+  },
+
+  extensionsToTreatAsEsm: ['.ts'],
+
   // All imported modules in your tests should be mocked automatically
   // automock: false,
 

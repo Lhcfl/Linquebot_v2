@@ -22,9 +22,9 @@
     // "useDefineForClassFields": true,                  /* 发出符合 ECMAScript 标准的类字段。 */
     // "moduleDetection": "auto",                        /* 控制用于检测模块格式 JS 文件的方法。 */
     /* 模块 */
-    "module": "ESNext" /* 指定生成的模块代码。 */,
+    "module": "NodeNext" /* 指定生成的模块代码。 */,
     // "rootDir": "./src", /* 指定源文件中的根文件夹。 */
-    "moduleResolution": "Bundler" /* 指定 TypeScript 如何从给定的模块说明符查找文件。 */,
+    "moduleResolution": "NodeNext" /* 指定 TypeScript 如何从给定的模块说明符查找文件。 */,
     "baseUrl": "." /* 指定基目录以解析非相关模块名称。 */,
     "paths": {
       "@": ["src"],
@@ -100,9 +100,6 @@
     /* 完成度 */
     // "skipDefaultLibCheck": true,                      /* 跳过 TypeScript 附带的类型检查 .d.ts 文件。 */
     "skipLibCheck": true /* 跳过对所有 .d.ts 文件的类型检查。 */
-  },
-  "tsc-alias": {
-    "resolveFullPaths": true
   },
   "include": ["./src"]
 }

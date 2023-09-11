@@ -1,6 +1,6 @@
 import path from 'path';
-import fs from './lock_fs';
-import { DeepReadonly, MaybePromise } from '@/util/types';
+import fs from './lock_fs.js';
+import { DeepReadonly, MaybePromise } from '@/util/types.js';
 
 /**
  * Store data in the database.
