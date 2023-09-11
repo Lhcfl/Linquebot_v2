@@ -60,7 +60,7 @@ async function getWaife(app: App, msg: Message) {
   if (!msg.from?.id) {
     return;
   }
-  await using waifedb = await app.newdb.db<Data>('waife');
+  await using waifedb = await app.db.db<Data>('waife');
   const chat = waifedb.data[msg.chat.id];
   if (new Date().toDateString() !== chat.lastwaifedate) {
     chat.waifemap = {};
@@ -119,7 +119,7 @@ async function getWaifeGraph(app: App, msg: Message) {
   if (!msg.from?.id) {
     return;
   }
-  await using waifedb = await app.newdb.db<Data>('waife');
+  await using waifedb = await app.db.db<Data>('waife');
   const chat = waifedb.data[msg.chat.id];
   const wfMap = chat.waifemap;
   if (Object.keys(wfMap).length <= 0) {
@@ -165,7 +165,7 @@ async function getWaifeGraph(app: App, msg: Message) {
 }
 
 const init: PluginInit = (app) => {
-  app.newdb.register('waife', { data: () => new Data() });
+  app.db.register('waife', { data: () => new Data() });
   app.registCommand({
     chat_type: ['group', 'supergroup'],
     command: 'waife',
@@ -181,7 +181,7 @@ const init: PluginInit = (app) => {
   app.registReplyHandle({
     chat_type: ['group', 'supergroup'],
     handle: async (appl, msg) => {
-      await using db = await app.newdb.db<Data>('waife');
+      await using db = await app.db.db<Data>('waife');
       add_to_wife(appl, db.data[msg.chat.id], msg, msg.from?.id);
     },
     description: '添加老婆！',

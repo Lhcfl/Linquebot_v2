@@ -4,7 +4,6 @@ import yaml from 'js-yaml';
 // import readline from 'readline'
 import std from '@/util/std.js';
 import fatalError from '@/util/fatal_error.js';
-import db from '@/lib/db.js';
 import { registCommand, registGlobalMessageHandle, registReplyHandle } from '@/lib/command.js';
 import { App } from '@/types/app.js';
 import { YamlConfig } from '@/types/config.js';
@@ -14,14 +13,14 @@ import { CreateBot } from '@/types/bridge.js';
 import { reverseReadFileIfExists } from '@/util/fs.js';
 import chalk from 'chalk';
 import { writeFileSafe } from './file_lock.js';
-import { DBManager } from './newdb.js';
-
-const newdb = new DBManager();
+import { DBManager } from './db.js';
 
 /**
  * `@/types/app.ts` 的 App 实现
  */
 export class Application implements App {
+  readonly db = new DBManager();
+
   private _bot?: TelegramBot;
   private _config?: YamlConfig;
   private _configExample: string;
@@ -92,14 +91,6 @@ export class Application implements App {
     } else {
       throw '无bot被初始化';
     }
-  }
-
-  get db() {
-    return db;
-  }
-
-  get newdb() {
-    return newdb;
   }
 
   get std() {

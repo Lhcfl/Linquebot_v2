@@ -91,7 +91,7 @@ function getJielongInfo(data: jielongStatus): string {
 }
 
 const startJielong: commandHandleFunction = async (app, msg, starter) => {
-  await using db = await app.newdb.db<jielongStatus>('chengyu');
+  await using db = await app.db.db<jielongStatus>('chengyu');
   const data = db.data[msg.chat.id];
   if (data.started) {
     app.bot?.sendMessage(
@@ -136,7 +136,7 @@ const startJielong: commandHandleFunction = async (app, msg, starter) => {
 };
 
 const stopJielong: commandHandleFunction = async (app, msg) => {
-  await using db = await app.newdb.db<jielongStatus>('chengyu');
+  await using db = await app.db.db<jielongStatus>('chengyu');
   const data = db.data[msg.chat.id];
   if (data.started) {
     app.bot?.sendMessage(
@@ -156,7 +156,7 @@ const stopJielong: commandHandleFunction = async (app, msg) => {
 };
 
 const newMessageHandle: handleFunction = async (app, msg) => {
-  await using db = await app.newdb.db<jielongStatus>('chengyu');
+  await using db = await app.db.db<jielongStatus>('chengyu');
   const data = db.data[msg.chat.id];
   if (data.started && msg.text && cy[msg.text]) {
     if (gameEnded(data)) {
@@ -164,7 +164,7 @@ const newMessageHandle: handleFunction = async (app, msg) => {
         data
       )}`;
       app.bot?.sendMessage(msg.chat.id, res);
-      app.newdb.with_path(['chengyu', msg.chat.id], () => {});
+      app.db.with_path(['chengyu', msg.chat.id], () => {});
       return;
     }
     if (data.st !== cy[msg.text].st) {
@@ -231,7 +231,7 @@ const newMessageHandle: handleFunction = async (app, msg) => {
 
 const init: PluginInit = (app) => {
   console.log('成语 loaded!');
-  app.newdb.register('chengyu', [() => new jielongStatus()]);
+  app.db.register('chengyu', [() => new jielongStatus()]);
   app.registCommand({
     chat_type: 'all',
     command: 'start_jielong',

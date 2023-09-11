@@ -2,17 +2,17 @@ import { botOnOffRegister, commandHandleFunction } from '../../lib/command.js';
 import { PluginInit } from '../../types/plugin.js';
 
 const bot_off: commandHandleFunction = (app, msg) => {
-  void app.newdb.with_path(['is turned on', msg.chat.id], () => false);
+  void app.db.with_path(['is turned on', msg.chat.id], () => false);
   void app.bot?.sendMessage(msg.chat.id, `${app.config?.bot_name}已关闭`);
 };
 const bot_on: commandHandleFunction = (app, msg) => {
-  void app.newdb.with_path(['is turned on', msg.chat.id], () => true);
+  void app.db.with_path(['is turned on', msg.chat.id], () => true);
   void app.bot?.sendMessage(msg.chat.id, `${app.config?.bot_name}已开机`);
 };
 const bot_status: commandHandleFunction = async (app, msg) => {
   void app.bot?.sendMessage(
     msg.chat.id,
-    (await app.newdb.with_path(['is turned on', msg.chat.id], (v) => v))
+    (await app.db.with_path(['is turned on', msg.chat.id], (v) => v))
       ? `${app.config?.bot_name}关机中`
       : `${app.config?.bot_name}开机中`
   );
@@ -20,10 +20,10 @@ const bot_status: commandHandleFunction = async (app, msg) => {
 
 const init: PluginInit = (app) => {
   console.log('xxx loaded!');
-  app.newdb.register('is turned on', [() => true]);
+  app.db.register('is turned on', [() => true]);
   botOnOffRegister(
     async (_, msg) =>
-      await app.newdb.with_path<boolean>(['is turned on', msg.chat.id], (val) => val)
+      await app.db.with_path<boolean>(['is turned on', msg.chat.id], (val) => val)
   );
   app.registCommand({
     description: 'bot关机',
