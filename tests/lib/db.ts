@@ -75,6 +75,12 @@ test('simple data', async () => {
       expect(val).toBe('with path');
     })
   ).toBe(undefined);
+  expect(
+    await mgr.peek_path(['array init test', 'b', 'a.a'], (val) => {
+      expect(val).toBe('with path');
+      return val;
+    })
+  ).toBe('with path');
 
   expect(ctnt).toEqual({
     '%-2%-3%-2%-3%-1%-1%-7%-7weird name': [

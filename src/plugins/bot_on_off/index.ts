@@ -12,7 +12,7 @@ const bot_on: commandHandleFunction = (app, msg) => {
 const bot_status: commandHandleFunction = async (app, msg) => {
   void app.bot?.sendMessage(
     msg.chat.id,
-    (await app.db.with_path(['is turned on', msg.chat.id], (v) => v))
+    (await app.db.peek_path(['is turned on', msg.chat.id], (v) => v))
       ? `${app.config?.bot_name}关机中`
       : `${app.config?.bot_name}开机中`
   );
@@ -23,7 +23,7 @@ const init: PluginInit = (app) => {
   app.db.register('is turned on', [() => true]);
   botOnOffRegister(
     async (_, msg) =>
-      await app.db.with_path<boolean>(['is turned on', msg.chat.id], (val) => val)
+      await app.db.peek_path<boolean>(['is turned on', msg.chat.id], (val) => val)
   );
   app.registCommand({
     description: 'bot关机',

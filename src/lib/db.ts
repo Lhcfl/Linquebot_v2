@@ -135,8 +135,33 @@ export class DBManager {
     return new DB(0, reg.init, reg.cache, this.storage, fname);
   }
 
+  private async get_subpath<T>(base: (string | number)[]) {
+    if (base.length <= 2) throw new Error('with_path should be called with a path longer than 2');
+    let db: DB<T> = { sub: (k) => this.db(k.toString()) } as DB<T>;
+    for (const name of base.slice(0, -2)) db = await db.sub(name);
+    return await db.sub<T>(base[base.length - 2]);
+  }
+
+  /**
+   * Conveniently transform data in the given entry in given path.
+   * Equivalent to a chain of calls.
+   *
+   * See [`with_path`]() for more details or writes are needed.
+   */
+  async peek_path<T>(
+    base: (string | number)[],
+    transaction: (a: DeepReadonly<T>) => MaybePromise<DeepReadonly<T>>
+  ): Promise<DeepReadonly<T>> {
+    // No, we don't need to write back here x
+    const subdb = await this.get_subpath<T>(base);
+    return await transaction(subdb.peek[base[base.length - 1]]);
+  }
+
   /**
    * Conveniently perform a transaction with the given entry in given path.
+   *
+   * If no writes are needed, use [`peek_path`]().
+   *
    * Equivalent to a chain of calls like:
    *
    * ``` typescript
@@ -153,17 +178,14 @@ export class DBManager {
    */
   async with_path<T>(
     base: (string | number)[],
-    transaction: (a: T) => Promise<void> | void
+    transaction: (a: T) => MaybePromise<void>
   ): Promise<void>;
-  async with_path<T>(base: (string | number)[], transaction: (a: T) => Promise<T> | T): Promise<T>;
+  async with_path<T>(base: (string | number)[], transaction: (a: T) => MaybePromise<T>): Promise<T>;
   async with_path<T>(
     base: (string | number)[],
     transaction: (a: T) => Promise<void | T> | void | T
   ): Promise<void | T> {
-    if (base.length <= 2) throw new Error('with_path should be called with a path longer than 2');
-    let db: DB<T> = { sub: (k) => this.db(k.toString()) } as DB<T>;
-    for (const name of base.slice(0, -2)) db = await db.sub(name);
-    await using subdb = await db.sub<T>(base[base.length - 2]);
+    await using subdb = await this.get_subpath<T>(base);
     const key = base[base.length - 1];
     const data = await transaction(subdb.data[key]);
     if (data) {
