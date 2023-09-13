@@ -136,7 +136,7 @@ export class DBManager {
   }
 
   private async get_subpath<T>(base: (string | number)[]) {
-    if (base.length <= 2) throw new Error('with_path should be called with a path longer than 2');
+    if (base.length < 2) throw new Error('with_path should be called with a path longer than 2');
     let db: DB<T> = { sub: (k) => this.db(k.toString()) } as DB<T>;
     for (const name of base.slice(0, -2)) db = await db.sub(name);
     return await db.sub<T>(base[base.length - 2]);

@@ -69,12 +69,12 @@ export async function write(fname: string, data: Buffer | string): Promise<void>
   // So why isn't there using expressions or using statement without variable name???
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   using _ = await FileLock.get(fname);
-  await fs.mkdir(path.dirname(fname));
-  await fs.copyFile(fname, `${fname}-backup`);
+  await fs.mkdir(path.dirname(fname), { recursive: true });
+  if (await readable(fname)) await fs.copyFile(fname, `${fname}-backup`);
   await fs.writeFile(`${fname}-writing`, '');
   await fs.writeFile(fname, data);
-  await fs.rm(`${fname}-writing`);
-  await fs.rm(`${fname}-backup`);
+  await fs.rm(`${fname}-writing`, { force: true });
+  await fs.rm(`${fname}-backup`, { force: true });
 }
 
 export default { read, write };
