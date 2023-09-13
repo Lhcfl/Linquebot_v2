@@ -15,7 +15,11 @@ const replyHandles: ReplyHandleConfig[] = [];
  */
 let on_off_mode: (app: App, msg: Message) => Promise<boolean> | boolean = () => true;
 
-export type commandHandleFunction = (app: App, message: Message, message_text?: string) => Promise<void> | void;
+export type commandHandleFunction = (
+  app: App,
+  message: Message,
+  message_text?: string
+) => Promise<void> | void;
 export type handleFunction = (app: App, message: Message) => Promise<void> | void;
 
 export interface _HandleConfigBase_ {
@@ -152,11 +156,19 @@ export function canUseCommand(app: App, message: Message, cmd: string): canUseCo
  */
 export async function commandParser(app: App, message: Message) {
   if (message.text?.startsWith(app.config.command_style)) {
-    const matched = message.text.substring(app.config.command_style.length).match(/[^\s@]+/);
+    const matched = message.text
+      .substring(app.config.command_style.length)
+      .match(/([^\s@]+)(@\S+)?/);
     if (!matched) {
       return;
     }
-    const cmd = matched[0];
+    const botname = matched[2]?.substring(1);
+    if (botname && botname !== app.config.bot_name) return;
+    const cmd = matched[1];
+    if (!(cmd in commands)) {
+      if (botname) void app.bot.sendMessage(message.chat.id, `无法识别的命令: ${cmd}`);
+      return;
+    }
     let message_text;
     const index = message.text.indexOf(' ') + 1;
     if (index) {
