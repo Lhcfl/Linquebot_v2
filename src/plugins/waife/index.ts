@@ -4,7 +4,7 @@ import { Message, User } from 'node-telegram-bot-api';
 import { tmpdir } from 'os';
 import fs from 'fs/promises';
 import { spawn } from 'child_process';
-import { getName } from '@/util/string.js';
+import { escapeLit, getName } from '@/util/string.js';
 
 class Data {
   waifes: User[] = [];
@@ -133,7 +133,7 @@ async function getWaifeGraph(app: App, msg: Message) {
     return;
   }
   const iduser = chat.iduserMap;
-  const getNode = (user: User) => `${user.id}[label="${getName(user)}"]`;
+  const getNode = (user: User) => `${user.id}[label="${escapeLit(getName(user))}"]`;
   const uidMap: { [key: string]: boolean } = {};
   const txt = [];
   for (const id in wfMap) {
