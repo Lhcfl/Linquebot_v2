@@ -2,9 +2,10 @@ export interface YamlConfig {
   platform: {
     enabled: string;
     settings: {
-      // telegram?: TelegramPlatform;
-      // qq?: QQPlatform;
-      [platform: string]: UnknownPlatform;
+      telegram?: TelegramPlatform;
+      qq?: QQPlatform;
+    } & {
+      [pl: string]: UnknownPlatform;
     };
   };
   /**
@@ -27,6 +28,7 @@ export interface YamlConfig {
 
 export interface TelegramPlatform {
   bot_token: string;
+  username: string;
   /**
    * 代理地址
    */
