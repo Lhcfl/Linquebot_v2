@@ -103,7 +103,10 @@ const startJielong: commandHandleFunction = async (app, msg, starter) => {
   } else {
     if (starter?.length && starter?.length >= 3) {
       if (cy[starter] === undefined) {
-        void app.bot?.sendMessage(msg.chat.id, `这个成语是什么，${app.config?.bot_name}不知道哦OoO`);
+        void app.bot?.sendMessage(
+          msg.chat.id,
+          `这个成语是什么，${app.config?.bot_name}不知道哦OoO`
+        );
         return;
       }
       Object.assign(data, {

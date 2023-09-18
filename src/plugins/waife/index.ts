@@ -17,7 +17,7 @@ class Data {
 /**
  * 将一个字符串转义为HTLML安全的
  * @param str 待转化成html安全的字符串
- * @returns 
+ * @returns
  */
 function htmlify(str: string | undefined): string {
   if (!str) {
@@ -32,10 +32,10 @@ function htmlify(str: string | undefined): string {
 
 /**
  * 将uid对应的人加入waife卡池
- * @param app 
- * @param msg 
+ * @param app
+ * @param msg
  * @param uid UserId
- * @returns 
+ * @returns
  */
 async function add_to_wife(app: App, chat: Data, msg: Message, uid?: number) {
   if (!uid) {
@@ -74,9 +74,9 @@ async function getWaifesList(app: App, chat: Data, msg: Message) {
 
 /**
  * 获取老婆！
- * @param app 
- * @param msg 
- * @returns 
+ * @param app
+ * @param msg
+ * @returns
  */
 async function getWaife(app: App, msg: Message) {
   if (!msg.from?.id) {

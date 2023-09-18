@@ -8,12 +8,12 @@ import { registCommand, registGlobalMessageHandle, registReplyHandle } from '@/l
 import { App } from '@/types/app.js';
 import { YamlConfig } from '@/types/config.js';
 import process from '@/lib/process.js';
-import TelegramBot from 'node-telegram-bot-api';
 import { reverseReadFileIfExists } from '@/util/fs.js';
 import chalk from 'chalk';
 import { writeFileSafe } from './file_lock.js';
 import { DBManager } from './db.js';
 import { Platform } from '@/util/types.js';
+import { StdBot } from '@/types/bridge.js';
 
 /**
  * `@/types/app.ts` 的 App 实现
@@ -21,7 +21,7 @@ import { Platform } from '@/util/types.js';
 export class Application implements App {
   readonly db = new DBManager();
 
-  private _bot?: TelegramBot;
+  private _bot?: StdBot;
   private _config?: YamlConfig;
   private _configExample: string;
   private _version: string;
@@ -86,7 +86,7 @@ export class Application implements App {
     }
   }
 
-  get bot(): TelegramBot {
+  get bot(): StdBot {
     if (this._bot) {
       return this._bot;
     } else {

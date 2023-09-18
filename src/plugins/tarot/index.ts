@@ -1,28 +1,19 @@
 import { commandHandleFunction } from '@/lib/command.js';
 import { PluginInit } from '@/types/plugin.js';
 import { getTarots } from './tarot.js';
-import { Message } from 'node-telegram-bot-api';
-
-function getName(message: Message): string {
-  let username: string = message.from?.first_name
-    ? message.from?.first_name
-    : message.from?.username
-      ? message.from?.username
-      : '';
-  if (message.from?.last_name) {
-    username += ' ' + message.from?.last_name;
-  }
-  return username;
-}
+import { getName } from '@/util/string.js';
 
 const sendTarot: commandHandleFunction = (app, msg, txt) => {
   if (!txt?.trim()) {
     txt = '1';
   }
   const tarots = getTarots(app, txt);
-  void app.bot?.sendMessage(msg.chat.id, `${getName(msg)}最近遇到了什么烦心事吗？让琳酱给你算一算:`);
+  void app.bot?.sendMessage(
+    msg.chat.id,
+    `${getName(msg.from)}最近遇到了什么烦心事吗？让琳酱给你算一算:`
+  );
   setTimeout(() => {
-    void app.bot?.sendMessage(msg.chat.id, `${getName(msg)}抽到的牌组是：\n${tarots}`);
+    void app.bot?.sendMessage(msg.chat.id, `${getName(msg.from)}抽到的牌组是：\n${tarots}`);
   }, 3000);
 };
 

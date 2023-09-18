@@ -1,17 +1,29 @@
 import TelegramBot from 'node-telegram-bot-api';
 import proxy from 'proxy-agent';
-import { CreateBot } from '@/types/bridge.js';
+import { CreateBot, StdBot } from '@/types/bridge.js';
 import { parseProxyUrl } from '@/util/string.js';
+
+class TgBotAdapter extends TelegramBot implements StdBot {
+  private spec;
+  constructor(token: string, options?: TelegramBot.ConstructorOptions & { spec?: string }) {
+    super(token, options);
+    this.spec = options?.spec;
+  }
+  spec_is_me(spec: string): boolean {
+    return spec === this.spec;
+  }
+}
 
 /**
  * 创建TelegramBot
  * @returns new TelegramBot
  */
-export const createBot: CreateBot = ({ bot_token, proxy_address }) => {
+export const createBot: CreateBot = ({ bot_token, proxy_address, spec }) => {
   let bot;
   if (proxy_address) {
     const { protocol, host, port } = parseProxyUrl(proxy_address);
-    bot = new TelegramBot(bot_token, {
+    bot = new TgBotAdapter(bot_token!, {
+      spec,
       polling: true,
       request: {
         agent: new proxy.ProxyAgent({
@@ -23,7 +35,8 @@ export const createBot: CreateBot = ({ bot_token, proxy_address }) => {
       },
     });
   } else {
-    bot = new TelegramBot(bot_token, {
+    bot = new TgBotAdapter(bot_token!, {
+      spec,
       polling: true,
     });
   }

@@ -22,8 +22,7 @@ const init: PluginInit = (app) => {
   console.log('xxx loaded!');
   app.db.register('is turned on', [() => true]);
   botOnOffRegister(
-    async (_, msg) =>
-      await app.db.peek_path<boolean>(['is turned on', msg.chat.id], (val) => val)
+    async (_, msg) => await app.db.peek_path<boolean>(['is turned on', msg.chat.id], (val) => val)
   );
   app.registCommand({
     description: 'bot关机',
