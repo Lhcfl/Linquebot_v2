@@ -2,6 +2,7 @@ import TelegramBot from 'node-telegram-bot-api';
 import { YamlConfig } from './config.js';
 import { registCommand, registGlobalMessageHandle, registReplyHandle } from '@/lib/command.js';
 import { Std } from '@/util/std.js';
+import { DBManager } from '@/lib/db.js';
 
 export interface App {
   /**
@@ -16,11 +17,8 @@ export interface App {
    * 初始化app。只应执行一次。
    */
   init(): Promise<void>;
-  /**
-   * 数据库获取
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  get db(): any;
+
+  get db(): DBManager;
 
   /**
    * 获得标准输入输出交互器

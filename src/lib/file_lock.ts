@@ -88,7 +88,7 @@ class functionQueue {
  * @param data 要写入的数据
  * @param options 参见fs.writeFileSync
  */
-export async function writeFileSafe(
+export function writeFileSafe(
   file: fs.PathOrFileDescriptor,
   data: string | NodeJS.ArrayBufferView,
   options?: fs.WriteFileOptions

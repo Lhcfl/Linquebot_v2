@@ -9,7 +9,7 @@ function reload() {
   const cp = child_process.fork('./init.js');
 
   cp.on('message', (message) => {
-    const msg: ProcessMessage = JSON.parse(String(message));
+    const msg = JSON.parse(String(message)) as ProcessMessage;
     if (msg.action === 'reboot') {
       console.log('应用程序发来重启信号，重启中……');
       console.log('-----------------');

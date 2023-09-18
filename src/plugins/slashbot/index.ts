@@ -50,12 +50,12 @@ const rong = (app: App, msg: Message, msgTxt?: string, rev?: boolean) => {
     }
     const i = msgTxt?.indexOf(' ');
     if (i === -1) {
-      app.bot?.sendMessage(msg.chat.id, `${A} ${msgTxt} ${B}!`, {
+      void app.bot?.sendMessage(msg.chat.id, `${A} ${msgTxt} ${B}!`, {
         parse_mode: 'HTML',
         reply_to_message_id: msg.message_id,
       });
     } else {
-      app.bot?.sendMessage(
+      void app.bot?.sendMessage(
         msg.chat.id,
         `${A} ${msgTxt.substring(0, i)} ${B} ${msgTxt.substring(i + 1)}!`,
         {

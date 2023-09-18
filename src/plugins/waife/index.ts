@@ -2,105 +2,16 @@ import { App } from '@/types/app.js';
 import { PluginInit } from '@/types/plugin.js';
 import { Message, User } from 'node-telegram-bot-api';
 import { tmpdir } from 'os';
-import fs from 'fs';
+import fs from 'fs/promises';
 import { spawn } from 'child_process';
+import { escapeLit, getName } from '@/util/string.js';
 
-const DB = {
-  /**
-   * 老婆卡池
-   */
-  getWaifes(app: App, msg: Message): User[] {
-    if (!app.db.chat(msg.chat.id).waifes) {
-      app.db.chat(msg.chat.id).waifes = [];
-      app.db.chat(msg.chat.id).waife_ids = {};
-      console.log('未找到waifes数据，初始化为[]');
-    }
-    return app.db.chat(msg.chat.id).waifes;
-  },
-  /**
-   * @returns 一个Map，根据uid获取老婆卡池中是否存在该uid对应的老婆
-   */
-  getWaifeIds(app: App, msg: Message): {[key: number]: boolean} {
-    if (!app.db.chat(msg.chat.id).waife_ids) {
-      app.db.chat(msg.chat.id).waifes = [];
-      app.db.chat(msg.chat.id).waife_ids = {};
-      console.log('未找到waife_ids数据，初始化为{}');
-    }
-    return app.db.chat(msg.chat.id).waife_ids;
-  },
-  /**
-   * 获取老婆关系Map
-   * @returns 一个Map，根据uid获取uid对应的用户的老婆
-   */
-  getWaifeMap(app: App, msg: Message): {
-    [key: number]: {
-      /**
-       * `/waife`命令输出的message id
-       */
-      msg_id: number,
-      /**
-       * `/waife`命令的message的date
-       */
-      date: number,
-      /**
-       * uid对应的老婆
-       */
-      waife: User,
-    }
-  } {
-    if (!app.db.chat(msg.chat.id).waifemap) {
-      /**
-       * waifemap[a] id为a的用户的老婆
-       */
-      this.clearWaifeMap(app, msg);
-    }
-    return app.db.chat(msg.chat.id).waifemap;
-  },
-  clearWaifeMap(app: App, msg: Message): void {
-    app.db.chat(msg.chat.id).waifemap = {};
-  },
-  /**
-   * iduserMap[a] id为a的用户
-   */
-  idUserMap(app: App, msg: Message): {[key: number]: User} {
-    if (!app.db.chat(msg.chat.id).iduserMap) {
-      app.db.chat(msg.chat.id).iduserMap = {};
-    }
-    return app.db.chat(msg.chat.id).iduserMap;
-  },
-  /**
-   * 获取上次抽老婆的日期
-   * @returns Date().toDateString();
-   */
-  getLastWaifeDate(app: App, msg: Message): string {
-    if (!app.db.chat(msg.chat.id).lastwaifedate) {
-      /**
-       * iduserMap[a] 大家上次抽老婆的日期
-       */
-      this.updateLastWaifeDate(app, msg);
-    }
-    return app.db.chat(msg.chat.id).lastwaifedate;
-  },
-  /**
-   * 更新上次抽老婆的日期
-   */
-  updateLastWaifeDate(app: App, msg: Message): void {
-    app.db.chat(msg.chat.id).lastwaifedate = new Date().toDateString();
-  }
-  
-};
-
-/**
- * 从一个User中获取Name
- * @param user 
- * @returns name
- */
-function getName(user: User): string {
-  let username: string = user.first_name ? user.first_name : user.username ? user.username : '';
-  if (user.last_name) {
-    username += ' ' + user.last_name;
-  }
-  return username;
+class Data {
+  waifes: User[] = [];
+  waifemap: { [uid: number]: { waife: User; date: number } } = {};
+  lastwaifedate: string = '';
+  waife_ids: { [k: number]: boolean } = {};
+  iduserMap: { [uid: number]: User } = {};
 }
 
 /**
@@ -126,11 +37,11 @@ function htmlify(str: string | undefined): string {
  * @param uid UserId
  * @returns 
  */
-async function add_to_wife(app: App, msg: Message, uid?: number) {
+async function add_to_wife(app: App, chat: Data, msg: Message, uid?: number) {
   if (!uid) {
     return;
   }
-  if (DB.getWaifeIds(app, msg)[uid]) {
+  if (chat.waife_ids[uid]) {
     return;
   }
   let you;
@@ -139,27 +50,26 @@ async function add_to_wife(app: App, msg: Message, uid?: number) {
   } else {
     you = msg.from;
   }
-  DB.getWaifeIds(app, msg)[uid] = true;
-  DB.getWaifes(app, msg).push(you);
-  DB.idUserMap(app, msg)[uid] = you;
+  chat.waife_ids[uid] = true;
+  chat.waifes.push(you);
+  chat.iduserMap[uid] = you;
 }
 
 /**
  * Initialize and get Waifes List
  */
-async function getWaifesList(app: App, msg: Message) {
-  if (DB.getWaifes(app, msg).length === 0) {
-    console.log('no waifes, getting...');
+async function getWaifesList(app: App, chat: Data, msg: Message) {
+  if (chat.waifes.length === 0) {
     const defaultWaifes = await app.bot.getChatAdministrators(msg.chat.id);
     console.log(defaultWaifes);
     for (const waife of defaultWaifes) {
-      DB.getWaifes(app, msg).push(waife.user);
-      DB.getWaifeIds(app, msg)[waife.user.id] = true;
-      DB.idUserMap(app, msg)[waife.user.id] = waife.user;
+      chat.waifes.push(waife.user);
+      chat.waife_ids[waife.user.id];
+      chat.iduserMap[waife.user.id] = waife.user;
     }
-    await add_to_wife(app, msg, msg.from?.id);
+    await add_to_wife(app, chat, msg, msg.from?.id);
   }
-  return DB.getWaifes(app, msg);
+  return chat.waifes;
 }
 
 /**
@@ -172,21 +82,27 @@ async function getWaife(app: App, msg: Message) {
   if (!msg.from?.id) {
     return;
   }
-  if (new Date().toDateString() !== DB.getLastWaifeDate(app, msg)) {
-    DB.clearWaifeMap(app, msg);
-    DB.updateLastWaifeDate(app, msg);
+  await using waifedb = await app.db.db<Data>('waife');
+  const chat = waifedb.data[msg.chat.id];
+  if (new Date().toDateString() !== chat.lastwaifedate) {
+    chat.waifemap = {};
+    chat.lastwaifedate = new Date().toDateString();
   }
-  if (DB.getWaifeMap(app, msg)[msg.from?.id]) {
-    app.bot.sendMessage(msg.chat.id, '你今天已经抽过老婆了哦！', {
+  if (chat.waifemap[msg.from?.id]) {
+    void app.bot.sendMessage(msg.chat.id, '你今天已经抽过老婆了哦！', {
       reply_to_message_id: msg.message_id,
     });
     return;
   }
-  const lst = await getWaifesList(app, msg);
+  const lst = await getWaifesList(app, chat, msg);
   if (lst.length <= 1) {
-    app.bot.sendMessage(msg.chat.id, '抱歉，我还没从群里获取到足够多的人哦，请先回复我一些消息', {
-      reply_to_message_id: msg.message_id,
-    });
+    void app.bot.sendMessage(
+      msg.chat.id,
+      '抱歉，我还没从群里获取到足够多的人哦，请先回复我一些消息',
+      {
+        reply_to_message_id: msg.message_id,
+      }
+    );
     return;
   }
   let waife: User = lst[Math.floor(Math.random() * lst.length)];
@@ -196,12 +112,11 @@ async function getWaife(app: App, msg: Message) {
     cnt++;
   }
   if (waife.id === msg.from?.id) {
-    app.bot.sendMessage(msg.chat.id, '获取失败……理论上不会出现这个情况, 请查看bot代码', {
+    void app.bot.sendMessage(msg.chat.id, '获取失败……理论上不会出现这个情况, 请查看bot代码', {
       reply_to_message_id: msg.message_id,
     });
     return;
   }
-  add_to_wife(app, msg, msg.from.id);
   const res = await app.bot.sendMessage(
     msg.chat.id,
     `${htmlify('获取成功~ 你今天的群友老婆是')} <a href="tg://user?id=${waife.id}">${htmlify(
@@ -212,58 +127,35 @@ async function getWaife(app: App, msg: Message) {
       reply_to_message_id: msg.message_id,
     }
   );
-  DB.getWaifeMap(app, msg)[msg.from?.id] = {
-    msg_id: res.message_id,
-    date: res.date,
-    waife,
-  };
+  chat.waifemap[msg.from?.id] = { date: res.date, waife };
+  await add_to_wife(app, chat, msg, msg.from.id);
 }
 
 async function renderGraph(id: string, src: string): Promise<Buffer> {
   const [fname, outname] = [`${tmpdir()}/${id}.gv`, `${tmpdir()}/${id}.png`];
-  await new Promise((res, rej) =>
-    fs.writeFile(fname, src, { encoding: 'utf-8' }, (err) => {
-      if (err) {
-        rej(err);
-      } else {
-        res({});
-      }
-    })
-  );
+  await fs.writeFile(fname, src, { encoding: 'utf8' });
   await new Promise((res, rej) => {
     const proc = spawn('dot', [fname, '-Tpng', '-o', outname]);
-    proc.on('close', (code) => {
-      if (code !== 0) {
-        rej(code);
-      } else {
-        res({});
-      }
-    });
+    proc.on('close', (code) => (code === 0 ? res(void 0) : rej(code)));
   });
-  return await new Promise((res, rej) =>
-    fs.readFile(outname, {}, (err, data) => {
-      if (err) {
-        rej(err);
-      } else {
-        res(data);
-      }
-    })
-  );
+  return await fs.readFile(outname);
 }
 
 async function getWaifeGraph(app: App, msg: Message) {
   if (!msg.from?.id) {
     return;
   }
-  const wfMap = DB.getWaifeMap(app, msg);
+  const waifedb = await app.db.db<Data>('waife');
+  const chat = waifedb.peek[msg.chat.id];
+  const wfMap = chat.waifemap;
   if (Object.keys(wfMap).length <= 0) {
-    app.bot.sendMessage(msg.chat.id, '群里还没人有老婆哦！', {
+    void app.bot.sendMessage(msg.chat.id, '群里还没人有老婆哦！', {
       reply_to_message_id: msg.message_id,
     });
     return;
   }
-  const iduser = DB.idUserMap(app, msg);
-  const getNode = (user: User) => `${user.id}[label="${getName(user)}"]`;
+  const iduser = chat.iduserMap;
+  const getNode = (user: User) => `${user.id}[label="${escapeLit(getName(user))}"]`;
   const uidMap: { [key: string]: boolean } = {};
   const txt = [];
   for (const id in wfMap) {
@@ -279,27 +171,27 @@ async function getWaifeGraph(app: App, msg: Message) {
       }
     }
   }
-  const src =
-    'digraph G {\n' + 'node[shape=box fontname="noto"];\n' + txt.join('\n') + '\n}';
+  const src = 'digraph G {\n' + 'node[shape=box];\n' + txt.join('\n') + '\n}';
   console.log(src);
-  const qidao = await app.bot.sendMessage(msg.chat.id, '少女祈祷中', {
+  const qidao = app.bot.sendMessage(msg.chat.id, '少女祈祷中', {
     reply_to_message_id: msg.message_id,
   });
   try {
     const rendered = await renderGraph('waife', src);
-    app.bot.deleteMessage(msg.chat.id, qidao.message_id);
-    app.bot.sendPhoto(msg.chat.id, rendered, {
+    void app.bot.sendPhoto(msg.chat.id, rendered, {
       reply_to_message_id: msg.message_id,
     });
+    void app.bot.deleteMessage(msg.chat.id, (await qidao).message_id);
   } catch (err) {
-    app.bot.deleteMessage(msg.chat.id, qidao.message_id);
-    app.bot.sendMessage(msg.chat.id, `诶呀，生成图片中出现了错误…… ${JSON.stringify(err)}`, {
+    void app.bot.sendMessage(msg.chat.id, `诶呀，生成图片中出现了错误…… ${JSON.stringify(err)}`, {
       reply_to_message_id: msg.message_id,
     });
+    void app.bot.deleteMessage(msg.chat.id, (await qidao).message_id);
   }
 }
 
 const init: PluginInit = (app) => {
+  app.db.register('waife', { data: () => new Data() });
   app.registCommand({
     chat_type: ['group', 'supergroup'],
     command: 'waife',
@@ -314,8 +206,9 @@ const init: PluginInit = (app) => {
   });
   app.registReplyHandle({
     chat_type: ['group', 'supergroup'],
-    handle: (appl, msg) => {
-      add_to_wife(appl, msg, msg.from?.id);
+    handle: async (appl, msg) => {
+      await using db = await app.db.db<Data>('waife');
+      await add_to_wife(appl, db.data[msg.chat.id], msg, msg.from?.id);
     },
     description: '添加老婆！',
   });

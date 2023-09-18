@@ -1,19 +1,18 @@
 import { botOnOffRegister, commandHandleFunction } from '../../lib/command.js';
-import db from '../../lib/db.js';
 import { PluginInit } from '../../types/plugin.js';
 
 const bot_off: commandHandleFunction = (app, msg) => {
-  db.chat(msg.chat.id).turned_off = true;
-  app.bot?.sendMessage(msg.chat.id, `${app.config?.bot_name}已关闭`);
+  void app.db.with_path(['is turned on', msg.chat.id], () => false);
+  void app.bot?.sendMessage(msg.chat.id, `${app.config?.bot_name}已关闭`);
 };
 const bot_on: commandHandleFunction = (app, msg) => {
-  db.chat(msg.chat.id).turned_off = false;
-  app.bot?.sendMessage(msg.chat.id, `${app.config?.bot_name}已开机`);
+  void app.db.with_path(['is turned on', msg.chat.id], () => true);
+  void app.bot?.sendMessage(msg.chat.id, `${app.config?.bot_name}已开机`);
 };
-const bot_status: commandHandleFunction = (app, msg) => {
-  app.bot?.sendMessage(
+const bot_status: commandHandleFunction = async (app, msg) => {
+  void app.bot?.sendMessage(
     msg.chat.id,
-    db.chat(msg.chat.id).turned_off
+    (await app.db.peek_path(['is turned on', msg.chat.id], (v) => v))
       ? `${app.config?.bot_name}关机中`
       : `${app.config?.bot_name}开机中`
   );
@@ -21,7 +20,11 @@ const bot_status: commandHandleFunction = (app, msg) => {
 
 const init: PluginInit = (app) => {
   console.log('xxx loaded!');
-  botOnOffRegister((App, msg) => !db.chat(msg.chat.id).turned_off);
+  app.db.register('is turned on', [() => true]);
+  botOnOffRegister(
+    async (_, msg) =>
+      await app.db.peek_path<boolean>(['is turned on', msg.chat.id], (val) => val)
+  );
   app.registCommand({
     description: 'bot关机',
     chat_type: 'all',

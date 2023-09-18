@@ -10,6 +10,7 @@ import {
 import { BotCommand } from 'node-telegram-bot-api';
 import { Application } from '@/lib/app.js';
 import { SuperManager } from '@/lib/super_manager.js';
+import { Plugin } from './util/types.js';
 
 /** 创建app */
 const app = new Application();
@@ -25,17 +26,19 @@ app.bot.on('message', (msg) => {
     return;
   }
   console.log(msg);
-  commandParser(app, msg);
-  if (botOnOff(app, msg)) {
-    for (const cfg of getGlobalMessageHandles()) {
-      cfg.handle(app, msg);
-    }
-    if (msg.reply_to_message) {
-      for (const cfg of getReplyHandles()) {
-        cfg.handle(app, msg);
+  void (async () => {
+    await commandParser(app, msg);
+    if (await botOnOff(app, msg)) {
+      for (const cfg of getGlobalMessageHandles()) {
+        void cfg.handle(app, msg);
+      }
+      if (msg.reply_to_message) {
+        for (const cfg of getReplyHandles()) {
+          void cfg.handle(app, msg);
+        }
       }
     }
-  }
+  })();
 });
 
 // 读取插件
@@ -48,8 +51,8 @@ async function readPlugin(pluginDir: string) {
   for (const subfolder of subfolders) {
     try {
       console.log(`> 加载插件 ${subfolder.name}...`);
-      const plugin = await import(`./plugins/${subfolder.name}/index.js`);
-      plugin.init(app);
+      const plugin = (await import(`./plugins/${subfolder.name}/index.js`)) as Plugin;
+      await plugin.init(app);
       success++;
     } catch (err) {
       errs.push(subfolder.name);
@@ -78,7 +81,7 @@ function setBotCommand() {
       });
     }
   }
-  app.bot!.setMyCommands(botCommands);
+  void app.bot.setMyCommands(botCommands);
 }
 
 setBotCommand();
