@@ -13,7 +13,7 @@ import chalk from 'chalk';
 import { writeFileSafe } from './file_lock.js';
 import { DBManager } from './db.js';
 import { Platform } from '@/util/types.js';
-import {StdBot} from '@/types/bridge.js';
+import { StdBot } from '@/types/bridge.js';
 
 /**
  * `@/types/app.ts` 的 App 实现

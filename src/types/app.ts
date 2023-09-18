@@ -2,7 +2,7 @@ import { YamlConfig } from './config.js';
 import { registCommand, registGlobalMessageHandle, registReplyHandle } from '@/lib/command.js';
 import { Std } from '@/util/std.js';
 import { DBManager } from '@/lib/db.js';
-import {StdBot} from './bridge.js';
+import { StdBot } from './bridge.js';
 
 export interface App {
   /**

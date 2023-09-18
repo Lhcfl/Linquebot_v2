@@ -7,6 +7,7 @@ const fin = new Promise((res) => (doexit = res));
 const procList = [
   // Force wrapping (
   'eslint . --ext .ts,.js --color',
+  'prettier -c .',
   'tsc --pretty && tsc-alias',
   'jest --color true',
 ].map(startProc);

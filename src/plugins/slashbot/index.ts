@@ -1,18 +1,7 @@
 import { Message } from 'node-telegram-bot-api';
 import { PluginInit } from '@/types/plugin.js';
 import { App } from '@/types/app.js';
-
-function getName(message: Message): string {
-  let username: string = message.from?.first_name
-    ? message.from?.first_name
-    : message.from?.username
-      ? message.from?.username
-      : '';
-  if (message.from?.last_name) {
-    username += ' ' + message.from?.last_name;
-  }
-  return username;
-}
+import { getName } from '@/util/string.js';
 
 function htmlify(str: string | undefined): string {
   if (!str) {
@@ -31,11 +20,11 @@ const rong = (app: App, msg: Message, msgTxt?: string, rev?: boolean) => {
     msgTxt = 'rong了';
   }
   if (typeof msgTxt === 'string' && msgTxt.length >= 1) {
-    let a = getName(msg);
+    let a = getName(msg.from);
     let b = undefined;
     let bid = msg.from?.id;
     if (msg.reply_to_message) {
-      b = getName(msg.reply_to_message);
+      b = getName(msg.reply_to_message.from);
       bid = msg.reply_to_message.from?.id;
     }
     if (a === b || b === undefined) {

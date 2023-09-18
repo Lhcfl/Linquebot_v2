@@ -1,5 +1,5 @@
-import {App} from '@/types/app.js';
-import {CreateBot} from '@/types/bridge.js';
+import { App } from '@/types/app.js';
+import { CreateBot } from '@/types/bridge.js';
 
 /**
  * Recursively make everything readonly in the type.
@@ -25,5 +25,5 @@ export type Plugin = { init: (app: App) => MaybePromise<void> };
  * The type that every platform adapter module should fit
  */
 export type Platform = {
-  createBot: CreateBot,
+  createBot: CreateBot;
 };

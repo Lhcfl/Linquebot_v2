@@ -37,7 +37,7 @@ async function setTitle(app: App, msg: Message, title: string = '') {
         throw err;
       }
       console.log(JSON.stringify(err));
-      if (err.message.includes('can\'t remove chat owner')) {
+      if (err.message.includes('remove chat owner')) {
         void app.bot.sendMessage(msg.chat.id, '不能给群主设置头衔哦', {
           reply_to_message_id: msg.message_id,
         });
