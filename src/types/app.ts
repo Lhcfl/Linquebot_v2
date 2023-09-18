@@ -1,8 +1,8 @@
-import TelegramBot from 'node-telegram-bot-api';
 import { YamlConfig } from './config.js';
 import { registCommand, registGlobalMessageHandle, registReplyHandle } from '@/lib/command.js';
 import { Std } from '@/util/std.js';
 import { DBManager } from '@/lib/db.js';
+import {StdBot} from './bridge.js';
 
 export interface App {
   /**
@@ -12,7 +12,7 @@ export interface App {
   /**
    * Telegram bot
    */
-  get bot(): TelegramBot;
+  get bot(): StdBot;
   /**
    * 初始化app。只应执行一次。
    */

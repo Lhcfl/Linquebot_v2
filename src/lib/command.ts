@@ -162,16 +162,11 @@ export async function commandParser(app: App, message: Message) {
     if (!matched) {
       return;
     }
-    const botid = matched[2]?.substring(1);
-    if (
-      botid &&
-      app.config.platform.enabled === 'telegram' &&
-      botid === app.config.platform.settings.telegram?.username
-    )
-      return;
+    const botspec = matched[2]?.substring(1);
+    if (botspec && app.bot.spec_is_me(botspec)) return;
     const cmd = matched[1];
     if (!(cmd in commands)) {
-      if (botid) void app.bot.sendMessage(message.chat.id, `无法识别的命令: ${cmd}`);
+      if (botspec) void app.bot.sendMessage(message.chat.id, `无法识别的命令: ${cmd}`);
       return;
     }
     let message_text;

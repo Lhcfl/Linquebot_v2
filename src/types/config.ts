@@ -26,20 +26,24 @@ export interface YamlConfig {
   outdate_seconds: number;
 }
 
-export interface TelegramPlatform {
+export type UnknownPlatform = {
+  [key in string]?: string;
+} & {
+  spec?: string;
+};
+
+export interface TelegramPlatform extends UnknownPlatform {
   bot_token: string;
   username: string;
+  spec?: string;
   /**
    * 代理地址
    */
   proxy_address?: string;
 }
 
-export interface QQPlatform {
+export interface QQPlatform extends UnknownPlatform {
+  spec?: string;
   username: string;
   password: string;
-}
-
-export interface UnknownPlatform {
-  [key: string]: string;
 }

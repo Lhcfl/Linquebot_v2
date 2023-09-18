@@ -7,7 +7,7 @@ platform:
     telegram:
       bot_token: 'xxxxxxxxxx:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
       # Bot的用户名, 用于回复中的模式识别
-      username: 'Linquebot'
+      spec: 'Linquebot'
       # 设置代理。无需代理则注释下面这一行。
       # proxy_address: 'http://proxy.com'
     qq:
