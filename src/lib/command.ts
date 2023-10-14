@@ -163,7 +163,7 @@ export async function commandParser(app: App, message: Message) {
       return;
     }
     const botspec = matched[2]?.substring(1);
-    if (botspec && app.bot.spec_is_me(botspec)) return;
+    if (botspec && !app.bot.spec_is_me(botspec)) return;
     const cmd = matched[1];
     if (!(cmd in commands)) {
       if (botspec) void app.bot.sendMessage(message.chat.id, `无法识别的命令: ${cmd}`);
