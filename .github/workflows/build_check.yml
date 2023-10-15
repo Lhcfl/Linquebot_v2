@@ -20,22 +20,22 @@ jobs:
       - run: npm install
       - run: npm run build
 
-      - name: Configure Git # 配置Git
-        env:
-          DEPLOY_PRI: ${{ secrets.DEPLOY_PRI }}
-          GIT_USERNAME: Bot
-          GIT_EMAIL: ${{ github.repository_owner }}@user.github.com
-        run: |
-          sudo timedatectl set-timezone "Asia/Shanghai"
-          mkdir -p ~/.ssh/
-          echo "$DEPLOY_PRI" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
-          git config --global user.name '$DEPLOY_PRI'
-          git config --global user.email '$DEPLOY_PRI'
+      # - name: Configure Git # 配置Git
+      #   env:
+      #     DEPLOY_PRI: ${{ secrets.DEPLOY_PRI }}
+      #     GIT_USERNAME: Bot
+      #     GIT_EMAIL: ${{ github.repository_owner }}@user.github.com
+      #   run: |
+      #     sudo timedatectl set-timezone "Asia/Shanghai"
+      #     mkdir -p ~/.ssh/
+      #     echo "$DEPLOY_PRI" > ~/.ssh/id_rsa
+      #     chmod 600 ~/.ssh/id_rsa
+      #     ssh-keyscan github.com >> ~/.ssh/known_hosts
+      #     git config --global user.name '$DEPLOY_PRI'
+      #     git config --global user.email '$DEPLOY_PRI'
       
-      - name: Update package-lock.json
-        run: |
-          git add package-lock.json
-          git commit -m "Auto Update package-lock" --no-verify
-          git push origin main
+      # - name: Update package-lock.json
+      #   run: |
+      #     git add package-lock.json
+      #     git commit -m "Auto Update package-lock" --no-verify
+      #     git push origin main
