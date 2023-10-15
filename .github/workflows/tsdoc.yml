@@ -41,7 +41,7 @@ jobs:
           git add -A
           git commit -m "API Document generated."
 
-      - name: Push javadocs # 推送
+      - name: Push TSDocs # 推送
         run: |
           cd docs
           git push origin HEAD:gh-pages --force
