@@ -10,7 +10,7 @@ type Data = {
 };
 
 const handleReply = async (app: App, msg: Message) => {
-  const msgdate = new Date(msg.date);
+  const msgdate = new Date(msg.date * 1000);
   const msghr = msgdate.getHours();
   await using curdb = await app.db.db<Data>('auto_reply');
   const chat = curdb.data[msg.chat.id];
@@ -25,26 +25,18 @@ const handleReply = async (app: App, msg: Message) => {
     [5, 6, '早安, ${user}~ 希望早起的你能无往不利呢'],
     [7, 9, '早安, ${user}~ 新的一天也会有新的美好的~'],
   ];
-  // If last reply date is in this time range, return
-  if (
-    msgdate.getTime() - repdate.getTime() >= 86400_000 ||
-    reply_invs.find(([lo, hi]) => lo <= repdate.getHours() && repdate.getHours() <= hi) ===
-      undefined
-  ) {
-    const vars: { [k: string]: string } = {
-      user: getName(msg.from),
-    };
-    for (const [lo, hi, rep] of reply_invs) {
-      if (msghr >= lo && msghr <= hi) {
-        void app.bot.sendMessage(
-          msg.chat.id,
-          rep.replaceAll(/\${(\w*)}/g, (_, s: string) => vars[s])
-        );
-        chat[msg.from!.id].last_reply = new Date();
-        break;
-      }
-    }
-  }
+  const vars: { [k: string]: string } = {
+    user: getName(msg.from),
+  };
+  const reply_it = reply_invs.find(([lo, hi]) => lo <= msghr && msghr <= hi);
+  if (reply_it === undefined) return;
+  const rephr = repdate.getHours();
+  const [lo, hi, rep] = reply_it;
+  if (lo <= rephr && rephr <= hi && msgdate.getTime() - repdate.getTime() <= 86400_000) return;
+  void app.bot.sendMessage(
+    msg.chat.id,
+    rep.replaceAll(/\${(\w*)}/g, (_, s: string) => vars[s])
+  );
 };
 
 const init: PluginInit = (init_app) => {
