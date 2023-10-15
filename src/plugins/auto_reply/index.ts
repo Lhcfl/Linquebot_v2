@@ -22,8 +22,7 @@ const handleReply = async (app: App, msg: Message) => {
     [22, 23, '很晚了呢, 揉揉${user}, 该睡觉了呢, 不要熬夜哦'],
     [0, 1, '很晚了呢, 揉揉${user}, 该睡觉了呢, 不要熬夜哦'],
     [2, 4, '是凌晨了呢, 揉揉抱抱${user}, 要注意身体呀, 记得睡觉的说'],
-    [5, 6, '早安, ${user}~ 希望早起的你能无往不利呢'],
-    [7, 9, '早安, ${user}~ 新的一天也会有新的美好的~'],
+    [7, 10, '早安, ${user}~ 新的一天也会有新的美好的~'],
   ];
   const vars: { [k: string]: string } = {
     user: getName(msg.from),
@@ -32,7 +31,7 @@ const handleReply = async (app: App, msg: Message) => {
   if (reply_it === undefined) return;
   const rephr = repdate.getHours();
   const [lo, hi, rep] = reply_it;
-  if (lo <= rephr && rephr <= hi && msgdate.getTime() - repdate.getTime() <= 86400_000) return;
+  if (lo <= rephr && rephr <= hi && msgdate.getTime() - repdate.getTime() <= 14400_000) return;
   void app.bot.sendMessage(
     msg.chat.id,
     rep.replaceAll(/\${(\w*)}/g, (_, s: string) => vars[s])
