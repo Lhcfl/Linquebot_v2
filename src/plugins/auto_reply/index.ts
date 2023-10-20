@@ -31,11 +31,17 @@ const handleReply = async (app: App, msg: Message) => {
   if (reply_it === undefined) return;
   const rephr = repdate.getHours();
   const [lo, hi, rep] = reply_it;
-  if (lo <= rephr && rephr <= hi && msgdate.getTime() - repdate.getTime() <= 14400_000) return;
+  if (
+    lo <= rephr &&
+    rephr <= hi &&
+    msgdate.getTime() - repdate.getTime() <= (hi - lo + 1) * 3600_000
+  )
+    return;
   void app.bot.sendMessage(
     msg.chat.id,
     rep.replaceAll(/\${(\w*)}/g, (_, s: string) => vars[s])
   );
+  chat[msg.from!.id].last_reply = msgdate;
 };
 
 const init: PluginInit = (init_app) => {
