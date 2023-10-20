@@ -188,9 +188,7 @@ export class DBManager {
     await using subdb = await this.get_subpath<T>(base);
     const key = base[base.length - 1];
     const data = await transaction(subdb.data[key]);
-    if (data) {
-      subdb.data[key] = data;
-    }
+    if (data !== undefined) subdb.data[key] = data;
     return data;
   }
 }
