@@ -8,6 +8,7 @@
     "start": "cd dist && node index.js",
     "preview": "npm run build && npm run start",
     "build": "tsc && tsc-alias",
+    "watch": "sh -c '(tsc-alias -w&); tsc -w'",
     "pretty": "prettier -c .",
     "pretty:fix": "prettier -w . && eslint . --fix --ext .ts,.js",
     "lint": "eslint . --ext .ts,.js",
@@ -48,6 +49,7 @@
   },
   "dependencies": {
     "chalk": "^5.3.0",
+    "dayjs": "^1.11.10",
     "js-yaml": "^4.1.0",
     "node-telegram-bot-api": "^0.61.0",
     "proxy-agent": "^6.3.1"
