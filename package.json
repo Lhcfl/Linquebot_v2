@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "cd src && ts-node-esm index.ts",
     "start": "cd dist && node index.js",
+    "run": "node index.js",
     "preview": "npm run build && npm run start",
     "build": "tsc && tsc-alias",
     "watch": "sh -c '(tsc-alias -w&); tsc -w'",
