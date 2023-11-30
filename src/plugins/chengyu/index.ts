@@ -1,3 +1,4 @@
+import { User } from 'node-telegram-bot-api';
 import { commandHandleFunction, handleFunction } from '../../lib/command.js';
 import { PluginInit } from '../../types/plugin.js';
 import { cy as _cy, cylist as _cylist, py as _py } from './lib_loader.js';
@@ -8,6 +9,12 @@ const cylist: { [key: string]: string[] } = _cylist; // 首拼音对应的成语
 const py: string[] = _py; // 所有可能的成语开局
 
 type userIdType = string | number;
+type UserStatusType = {
+  username?: string;
+  score?: number;
+  combo?: number;
+  uid?: userIdType;
+};
 class jielongStatus {
   /** 是否已开始接龙 */
   started: boolean = false;
@@ -16,22 +23,26 @@ class jielongStatus {
   /** 上一个被接龙的成语 */
   stcy?: string;
   /** 已经接龙的词语Map 真值说明已经接过。 */
-  counted: { [key: string]: number | boolean } = {};
+  counted?: { [key: string]: number | boolean } = {};
   /** 上一个接龙的userid */
   lastJielonger?: userIdType;
   /** 目前连击数 */
   combo?: number;
   /** 用户得分信息 */
   userStatus?: {
-    [key: userIdType]: {
-      username?: string;
-      score?: number;
-      combo?: number;
-      uid?: number;
-    };
+    [key: userIdType]: UserStatusType | undefined;
   };
   /** 开始时间（转换为Number） */
   startAt?: number;
+}
+
+function getDefaultUserStatus(u?: User): UserStatusType {
+  return {
+    uid: u?.id,
+    username: u?.username || u?.first_name,
+    score: 0,
+    combo: 1,
+  };
 }
 
 function gameEnded(data: jielongStatus): boolean {
@@ -53,7 +64,14 @@ function setRandomChenyu(data: jielongStatus, starter?: string): string {
     return setRandomChenyu(data, py[Math.floor(Math.random() * py.length)]);
   } else {
     const find: string = cylist[starter][Math.floor(Math.random() * cylist[starter].length)];
-    data.counted[find] = true;
+
+    if (data.counted) {
+      data.counted[find] = true;
+    } else {
+      const newDataCounted: Record<string, number | boolean> = {};
+      newDataCounted[find] = true;
+      data.counted = newDataCounted;
+    }
     data.st = cy[find].ed;
     data.stcy = find;
     return find;
@@ -74,9 +92,10 @@ function getJielongInfo(data: jielongStatus): string {
       return '无数据！';
     }
 
-    const uList = [];
+    const uList: UserStatusType[] = [];
     for (const uid of Object.keys(userStatus)) {
-      uList.push(userStatus[uid]);
+      const us = userStatus[uid];
+      if (us) uList.push(us);
     }
     uList.sort((a, b) => Number(b.score) - Number(a.score));
     for (let i = 0; i < uList.length; i++) {
@@ -173,14 +192,21 @@ const newMessageHandle: handleFunction = async (app, msg) => {
     if (data.st !== cy[msg.text].st) {
       return;
     }
-    if (data.counted[msg.text]) {
+    if (data.counted && data.counted[msg.text]) {
       void app.bot?.sendMessage(msg.chat.id, '这个成语接过了哦');
     } else {
       if (!msg.from?.id) {
         return;
       }
       // 接龙成功
-      data.counted[msg.text] = true;
+      if (data.counted) {
+        data.counted[msg.text] = true;
+      } else {
+        const newDataCounted: Record<string, number | boolean> = {};
+        newDataCounted[msg.text] = true;
+        data.counted = newDataCounted;
+      }
+
       data.st = cy[msg.text].ed;
       data.stcy = msg.text;
       let userStatus = data.userStatus;
@@ -188,15 +214,12 @@ const newMessageHandle: handleFunction = async (app, msg) => {
         data.userStatus = {};
         userStatus = {};
       }
-      if (!userStatus[msg.from?.id]) {
-        userStatus[msg.from?.id] = {
-          uid: msg.from?.id,
-          username: msg.from?.username,
-          score: 0,
-          combo: 1,
-        };
-      }
-      userStatus[msg.from?.id].score = Number(userStatus[msg.from?.id].score) + 1;
+      const userStatusToUpdate = userStatus[msg.from?.id] || getDefaultUserStatus(msg.from);
+
+      userStatusToUpdate.score = Number(userStatusToUpdate.score) + 1;
+
+      userStatus[msg.from?.id] = userStatusToUpdate;
+
       // 判断combo
       if (!data.combo) {
         data.combo = 0;
@@ -206,10 +229,13 @@ const newMessageHandle: handleFunction = async (app, msg) => {
       } else {
         const lastJielonger = data.lastJielonger;
         if (lastJielonger) {
-          userStatus[lastJielonger].combo = Math.max(
-            userStatus[lastJielonger].combo ?? 0,
-            data.combo
-          );
+          const lastJielongerUserStatus = userStatus[lastJielonger] || {
+            uid: lastJielonger,
+            score: 0,
+            combo: 1,
+          };
+          lastJielongerUserStatus.combo = Math.max(lastJielongerUserStatus.combo ?? 0, data.combo);
+          userStatus[lastJielonger] = lastJielongerUserStatus;
         }
         data.combo = 1;
         data.lastJielonger = msg.from?.id;
