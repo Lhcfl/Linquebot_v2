@@ -19,7 +19,7 @@ const bot_status: commandHandleFunction = async (app, msg) => {
 };
 
 const init: PluginInit = (app) => {
-  console.log('xxx loaded!');
+  console.log('bot_on_off loaded!');
   app.db.register('is turned on', [() => true]);
   botOnOffRegister(
     async (_, msg) => await app.db.peek_path<boolean>(['is turned on', msg.chat.id], (val) => val)

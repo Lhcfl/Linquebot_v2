@@ -230,5 +230,5 @@ export function botOnOffRegister(func: typeof on_off_mode) {
  * @returns bot是否处于打开状态
  */
 export async function botOnOff(app: App, msg: Message): Promise<boolean> {
-  return await on_off_mode(app, msg);
+  return Boolean(await on_off_mode(app, msg));
 }
