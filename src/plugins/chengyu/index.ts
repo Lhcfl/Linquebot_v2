@@ -14,7 +14,7 @@ type UserStatusType = {
   score?: number;
   combo?: number;
   uid?: userIdType;
-}
+};
 class jielongStatus {
   /** 是否已开始接龙 */
   started: boolean = false;
@@ -36,7 +36,7 @@ class jielongStatus {
   startAt?: number;
 }
 
-function getDefaultUserStatus(u? : User): UserStatusType {
+function getDefaultUserStatus(u?: User): UserStatusType {
   return {
     uid: u?.id,
     username: u?.username || u?.first_name,
@@ -64,7 +64,7 @@ function setRandomChenyu(data: jielongStatus, starter?: string): string {
     return setRandomChenyu(data, py[Math.floor(Math.random() * py.length)]);
   } else {
     const find: string = cylist[starter][Math.floor(Math.random() * cylist[starter].length)];
-    
+
     if (data.counted) {
       data.counted[find] = true;
     } else {
@@ -234,10 +234,7 @@ const newMessageHandle: handleFunction = async (app, msg) => {
             score: 0,
             combo: 1,
           };
-          lastJielongerUserStatus.combo = Math.max(
-            lastJielongerUserStatus.combo ?? 0,
-            data.combo
-          );
+          lastJielongerUserStatus.combo = Math.max(lastJielongerUserStatus.combo ?? 0, data.combo);
           userStatus[lastJielonger] = lastJielongerUserStatus;
         }
         data.combo = 1;
