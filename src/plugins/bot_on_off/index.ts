@@ -13,8 +13,8 @@ const bot_status: commandHandleFunction = async (app, msg) => {
   void app.bot?.sendMessage(
     msg.chat.id,
     (await app.db.peek_path(['is turned on', msg.chat.id], (v) => v))
-      ? `${app.config?.bot_name}关机中`
-      : `${app.config?.bot_name}开机中`
+      ? `${app.config?.bot_name}开机中`
+      : `${app.config?.bot_name}关机中`
   );
 };
 
