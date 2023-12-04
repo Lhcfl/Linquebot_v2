@@ -23,10 +23,11 @@ function randnoid(app: App, msg: Message, msgTxt?: string) {
 function dice(app: App, msg: Message, txt?: string) {
   const sub = txt?.trim().match(/^(\d+)d(\d+)$/);
   if (!sub || sub.length < 3) return void app.bot.sendMessage(msg.chat.id, '只支持xdy的格式');
+  if (Number(sub[1]) >= 128) return void app.bot.sendMessage(msg.chat.id, '投掷次数不能超过128');
   const res = Array.from({ length: Number(sub[1]) }, () =>
-    Math.floor(Math.random() * Number(sub[2]))
+    Math.ceil(Math.random() * Number(sub[2]))
   );
-  const sum = res.reduce((a, b) => a + b);
+  const sum = res.reduce((a, b) => a + b, 0);
   void app.bot.sendMessage(msg.chat.id, `${getName(msg.from)} 掷出了${sum}: ${res.join(', ')}`);
 }
 
