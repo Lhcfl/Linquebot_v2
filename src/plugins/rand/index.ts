@@ -7,7 +7,18 @@ function rand(app: App, msg: Message, msgTxt?: string) {
   const result = Math.floor(Math.random() * 101);
   const username = getName(msg.from);
   if (msgTxt) {
-    void app.bot.sendMessage(msg.chat.id, `${username} ${msgTxt} 的概率是: ${result}%`);
+    if (msgTxt.includes('还是')) {
+      const choices = msgTxt.split('还是').filter((a) => a);
+      void app.bot.sendMessage(
+        msg.chat.id,
+        `${choices[Math.floor(Math.random() * choices.length)]}!`,
+        {
+          reply_to_message_id: msg.message_id,
+        }
+      );
+    } else {
+      void app.bot.sendMessage(msg.chat.id, `${username} ${msgTxt} 的概率是: ${result}%`);
+    }
   } else {
     void app.bot.sendMessage(msg.chat.id, `${username} 掷出了: ${result}`);
   }
