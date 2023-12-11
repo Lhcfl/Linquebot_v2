@@ -65,13 +65,39 @@ const handleReply = async (app: App, msg: Message) => {
   if (msg.from === undefined) return;
 
   // We expect Linquebot to auto-reply more randomly to prevent sudden interruptions.
-  if (Math.random() > 0.1) return;
+  // 智能回复
+  let must = false;
+  if (msg.text) {
+    for (const greetingKeyword of ['早安', '晚安', '早上好', '晚上好', '困']) {
+      if (msg.text.includes(greetingKeyword)) {
+        must = true;
+      }
+    }
+  }
+  if (must || Math.random() > 0.1) return;
 
   await using db = await app.db.db<Data>('auto_reply');
   const usrdb = db.data[msg.from.id];
-  const msgdate = dayjs.unix(msg.date).tz(usrdb.tz);
+
+  // Return if the user do not want to be auto replied.
+  if (usrdb.tz === 'none') {
+    return;
+  }
+
+  const getTime = (time: number) => {
+    if (/^[uU][tT][cC][+-][\d]+(\.5)?$/.test(usrdb.tz)) {
+      return dayjs
+        .unix(time)
+        .tz('utc')
+        .add(Number(usrdb.tz.slice(3)), 'hour');
+    } else {
+      return dayjs.unix(time).tz(usrdb.tz);
+    }
+  };
+
+  const msgdate = getTime(msg.date);
   const msghr = msgdate.hour();
-  const repdate = dayjs.unix(usrdb.last_reply[msg.chat.id]).tz(usrdb.tz);
+  const repdate = getTime(usrdb.last_reply[msg.chat.id]);
 
   const vars: { [k: string]: string } = {
     user: getName(msg.from),
@@ -97,7 +123,8 @@ const init: PluginInit = (init_app) => {
   });
   init_app.registCommand({
     command: 'set_tz',
-    description: '设置用户当前的时区名, 例如, Europe/Rome',
+    description:
+      '设置用户当前的时区名, 例如, Europe/Rome. 或者设置成UTC+x. 设置成none会关闭有关时间的功能。',
     handle: async (app, msg, text) => {
       if (msg.from === undefined) return;
       if (!text) {
@@ -108,7 +135,7 @@ const init: PluginInit = (init_app) => {
       }
       text = text.trim();
       try {
-        dayjs().tz(text);
+        text === 'none' || /^[uU][tT][cC][+-][\d]+(\.5)?$/.test(text) || dayjs().tz(text);
       } catch (e) {
         if (e instanceof RangeError) {
           void app.bot.sendMessage(msg.chat.id, '无法识别时区名', {
