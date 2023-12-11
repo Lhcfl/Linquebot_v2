@@ -135,7 +135,7 @@ const init: PluginInit = (init_app) => {
       }
       text = text.trim();
       try {
-        text === 'none' || /^[uU][tT][cC][+-][\d]+(\.5)?$/.test(text) || dayjs().tz(text);
+        text === 'none' || /^[uU][tT][cC][+-][\d][\d]?(\.5)?$/.test(text) || dayjs().tz(text);
       } catch (e) {
         if (e instanceof RangeError) {
           void app.bot.sendMessage(msg.chat.id, '无法识别时区名', {
