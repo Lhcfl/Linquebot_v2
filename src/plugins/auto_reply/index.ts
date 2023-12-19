@@ -111,7 +111,7 @@ const handleReply = async (app: App, msg: Message) => {
     msg.chat.id,
     getSample(rep).replaceAll(/\${(\w*)}/g, (_, s: string) => vars[s])
   );
-  usrdb.last_reply[msg.chat.id] = msgdate.unix();
+  usrdb.last_reply[msg.chat.id] = msg.date;
 };
 
 const init: PluginInit = (init_app) => {
