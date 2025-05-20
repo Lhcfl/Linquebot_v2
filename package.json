@@ -1,0 +1,59 @@
+{
+  "name": "linquebot_v2",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "dev": "cd src && ts-node-esm index.ts",
+    "start": "cd dist && node index.js",
+    "run": "node index.js",
+    "preview": "npm run build && npm run start",
+    "build": "tsc && tsc-alias && cp -r src/assets dist/assets",
+    "watch": "sh -c '(tsc-alias -w&); tsc -w'",
+    "pretty": "prettier -c .",
+    "pretty:fix": "prettier -w . && eslint . --fix --ext .ts,.js",
+    "lint": "eslint . --ext .ts,.js",
+    "lint:fix": "eslint . --fix --ext .ts,.js",
+    "prepare": "if [ \"$NODE_ENV\" != \"production\" ]; then husky install; fi",
+    "doc:generate": "typedoc",
+    "test": "jest",
+    "release": "npm install && npm run build && docker build --tag linquebot-docker ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lhcfl/Linquebot_v2.git"
+  },
+  "author": "Lhc_fl, TagBug",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Lhcfl/Linquebot_v2/issues"
+  },
+  "homepage": "https://github.com/Lhcfl/Linquebot_v2#readme",
+  "devDependencies": {
+    "@types/jest": "^29.5.5",
+    "@types/js-yaml": "^4.0.7",
+    "@types/node": "^20.8.6",
+    "@types/node-telegram-bot-api": "^0.61.8",
+    "@typescript-eslint/eslint-plugin": "^6.7.5",
+    "@typescript-eslint/parser": "^6.7.5",
+    "eslint": "^8.51.0",
+    "eslint-config-discourse": "^3.6.0",
+    "eslint-config-prettier": "^9.0.0",
+    "husky": "^8.0.3",
+    "jest": "^29.7.0",
+    "prettier": "^3.0.3",
+    "ts-jest": "^29.1.1",
+    "ts-node": "^10.9.1",
+    "tsc-alias": "^1.8.8",
+    "typedoc": "^0.25.2",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "canvas": "^3.1.0",
+    "chalk": "^5.3.0",
+    "dayjs": "^1.11.10",
+    "js-yaml": "^4.1.0",
+    "node-telegram-bot-api": "^0.61.0",
+    "proxy-agent": "^6.3.1"
+  }
+}
