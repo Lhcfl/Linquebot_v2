@@ -1,5 +1,5 @@
 import { App } from '@/types/app.js';
-import tarots from './lib/tarots.json' assert { type: 'json' };
+import tarots from './lib/tarots.json' with { type: 'json' };
 
 /**
  * 获得一组塔罗牌

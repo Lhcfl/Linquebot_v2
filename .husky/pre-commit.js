@@ -6,10 +6,13 @@ const fin = new Promise((res) => (doexit = res));
 
 const procList = [
   // Force wrapping (
-  'eslint . --ext .ts,.js --color',
-  'prettier -c .',
-  'tsc --pretty && tsc-alias',
-  'jest --color true',
+  // 'eslint . --ext .ts,.js --color',
+  // 'prettier -c .',
+  // 'tsc --pretty && tsc-alias',
+  // 'jest --color true',
+  'npm lint:fix',
+  'npm pretty:fix',
+  'npm build'
 ].map(startProc);
 const totproc = procList.length;
 
