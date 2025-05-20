@@ -261,7 +261,7 @@ class DB<T> implements AsyncDisposable {
     });
     this.peek = new Proxy<typeof this.peek>(this.ctnt, {
       get(data, name: string) {
-        return name in data ? data[name] : cached[name] ?? curinit();
+        return name in data ? data[name] : (cached[name] ?? curinit());
       },
     });
   }
